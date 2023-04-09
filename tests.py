@@ -1,7 +1,7 @@
-import data
+import engine
 
 def test_addition():
-  a = data.Value(3.0)
+  a = engine.Value(3.0)
   b = a + a
 
   b.grad = 1.0
@@ -14,8 +14,8 @@ def test_addition():
   assert a.data == 3.0
 
 def test_multiplication():
-  a = data.Value(2.0)
-  b = data.Value(4.0)
+  a = engine.Value(2.0)
+  b = engine.Value(4.0)
   c = a * b
 
   c.grad = 1.0
@@ -28,8 +28,8 @@ def test_multiplication():
   assert b.grad == 2.0
 
 def test_complex():
-  a = data.Value(-2.0)
-  b = data.Value(3.0)
+  a = engine.Value(-2.0)
+  b = engine.Value(3.0)
 
   c = a + b # 1 
   d = a * b # -6

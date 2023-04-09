@@ -1,76 +1,94 @@
 import math
 
 class Value:
-  def __init__(self, data, _children=(), _op='', label=''):
+  """ stores a single scalar value and its gradient """
+
+  def __init__(self, data, _children=(), _op=''):
     self.data = data
     self.grad = 0.0
-    self._backward = lambda: None
+    self._backprop = lambda: None
     self._prev = set(_children)
     self._op = _op
-    self.label = label
 
   def __repr__(self):
-    return f"Value(data={self.data},{self.grad})"
+    return f"Value(data={self.data}, grad={self.grad})"
 
   def __add__(self, other):
-    out = Value(self.data + other.data, (self, other), '+')
+    output = Value(self.data + other.data, (self, other), '+')
 
     # Backward propagation for addition operation
-    def _backward():
-      self.grad += 1.0 * out.grad  # Derivative with respect to itself * output gradient
-      other.grad += 1.0 * out.grad # same goes with the other variable
+    def _backprop():
+      self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
+      other.grad += 1.0 * output.grad # same here
 
-    out._backward = _backward
-    return out
+    output._backprop = _backprop
+    return output
 
   def __mul__(self, other):
-    out = Value(self.data * other.data, (self, other), '*')
+    output = Value(self.data * other.data, (self, other), '*')
 
     # Backward propagation for multiplication operation
-    def _backward():
-      self.grad += other.grad * out.grad  # Derivative with respect to itself * output gradient
-      other.grad += self.grad * out.grad # same goes with the other variable
+    def _backprop():
+      self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
+      other.grad += self.data * output.grad  # same here
 
-    out._backward = _backward
+    output._backprop = _backprop
 
-    return out
+    return output
 
-  def backward(self):
-    # Topological sort, used for backpropagation 
+  def __pow__(self, other):
+    assert isinstance(other, (int, float)), "only supporting int/float powers for now"
+    output = Value(self.data ** other, (self, other), f'**{other}')
 
-    def _build_topo(node, topo = [], visited = set()):
+    def _backprop():
+        self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
+
+    output._backprop = _backprop
+    return output
+
+  def exp(self):
+    output = Value(math.exp(self.data), (self), 'exp')
+
+    # Backward propagation for exponentation
+    def _backprop():
+      self.grad += output.data * output.grad
+
+    output._backprop = _backprop
+
+    return output
+
+  def backprop(self):
+    # Used for calculating gradient of the nodes in order
+    def _build_topological_sort(node, topo = [], visited = set()):
       if node not in visited:
         visited.add(node)
         for child in node._prev:
-          _build_topo(child, topo, visited)
+          _build_topological_sort(child, topo, visited)
 
         topo.append(node)
 
       return topo
 
-    topo = _build_topo(self)
+    topo = _build_topological_sort(self)
 
-    # Propagate the gradient backwards
-
-    self.grad = 1.0 # Setting the Cost node as 1
+    # Propagate the gradient backprops
+    self.grad = 1.0 # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
     for node in reversed(topo):
-      node._backward()
+      node._backprop()
 
 
   def tanh(self):
     x = self.data
     t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-    out = Value(t, (self, ), 'tanh')
+    output = Value(t, (self), 'tanh')
 
     #Backpropagation for tanh operation
-    def _backward():
-        self.grad = (1 - t ** 2) * out.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+    def _backprop():
+        self.grad = (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
 
-    self._backward = _backward
-    return out
+    self._backprop = _backprop
+    return output
 
     def squared(self):
       # implement squared loss computation
       pass
-
-

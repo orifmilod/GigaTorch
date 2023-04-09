@@ -46,16 +46,26 @@ class Value:
     output._backprop = _backprop
     return output
 
-  def exp(self):
-    output = Value(math.exp(self.data), (self), 'exp')
+  def __neg__(self):
+    return self * -1
 
-    # Backward propagation for exponentation
-    def _backprop():
-      self.grad += output.data * output.grad
+  def __radd__(self, other):
+    return self + other
 
-    output._backprop = _backprop
+  def __sub__(self, other):
+    return self + (-other)
 
-    return output
+  def __rsub__(self, other):
+    return other + (-self)
+
+  def __rmul__(self, other):
+    return self * other
+
+  def __truediv__(self, other):
+    return self * other ** -1
+
+  def __rtruediv__(self, other):
+    return other * self ** -1
 
   def backprop(self):
     # Used for calculating gradient of the nodes in order

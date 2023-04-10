@@ -15,7 +15,6 @@ class Value:
 
   def __add__(self, other):
     other = other if isinstance(other, Value) else Value(other)
-
     output = Value(self.data + other.data, (self, other), '+')
 
     # Backward propagation for addition operation
@@ -76,7 +75,6 @@ class Value:
     def _build_topological_sort(node, topo = [], visited = set()):
       if node not in visited:
         visited.add(node)
-        # print(node)
         for child in node._prev:
           _build_topological_sort(child, topo, visited)
 
@@ -89,7 +87,9 @@ class Value:
     # Propagate the gradient backprops
     self.grad = 1.0 # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
     for node in reversed(topo):
+      print(f"calling backprop on {node}")
       node._backprop()
+      print(f"Grad became {node}")
 
 
   def tanh(self):
@@ -99,7 +99,7 @@ class Value:
 
     #Backpropagation for tanh operation
     def _backprop():
-        self.grad = (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+      self.grad += (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
 
     self._backprop = _backprop
     return output

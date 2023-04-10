@@ -1,7 +1,7 @@
-import engine
+from mytorch.engine import Value
 
 def test_addition():
-  a = engine.Value(3.0)
+  a = Value(3.0)
   b = a + a
 
   b.grad = 1.0
@@ -14,8 +14,8 @@ def test_addition():
   assert a.data == 3.0
 
 def test_multiplication():
-  a = engine.Value(2.0)
-  b = engine.Value(4.0)
+  a = Value(2.0)
+  b = Value(4.0)
   c = a * b
 
   c.grad = 1.0
@@ -28,8 +28,8 @@ def test_multiplication():
   assert b.grad == 2.0
 
 def test_complex():
-  a = engine.Value(-2.0)
-  b = engine.Value(3.0)
+  a = Value(-2.0)
+  b = Value(3.0)
 
   c = a + b # 1 
   d = a * b # -6
@@ -53,17 +53,3 @@ def test_complex():
 
   assert b.data == 3.0
   assert b.grad == -8.0
-
-
-def tests():
-  print("Running tests")
-  test_addition()
-  test_multiplication()
-  test_complex()
-  print("Tests run successfully")
-
-def main():
-  tests()
-
-if __name__ == "__main__":
-    main()

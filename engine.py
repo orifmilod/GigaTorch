@@ -42,7 +42,7 @@ class Value:
 
   def __pow__(self, other):
     assert isinstance(other, (int, float)), "only supporting int/float powers for now"
-    output = Value(self.data ** other, (self, other), f'**{other}')
+    output = Value(self.data ** other, (self, Value(other)), f'**{other}')
 
     def _backprop():
         self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
@@ -76,6 +76,7 @@ class Value:
     def _build_topological_sort(node, topo = [], visited = set()):
       if node not in visited:
         visited.add(node)
+        # print(node)
         for child in node._prev:
           _build_topological_sort(child, topo, visited)
 
@@ -103,6 +104,6 @@ class Value:
     self._backprop = _backprop
     return output
 
-    def squared(self):
+  def squared(self):
       # implement squared loss computation
       pass

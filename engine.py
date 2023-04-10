@@ -14,6 +14,8 @@ class Value:
     return f"Value(data={self.data}, grad={self.grad})"
 
   def __add__(self, other):
+    other = other if isinstance(other, Value) else Value(other)
+
     output = Value(self.data + other.data, (self, other), '+')
 
     # Backward propagation for addition operation
@@ -25,6 +27,8 @@ class Value:
     return output
 
   def __mul__(self, other):
+    other = other if isinstance(other, Value) else Value(other)
+
     output = Value(self.data * other.data, (self, other), '*')
 
     # Backward propagation for multiplication operation
@@ -90,7 +94,7 @@ class Value:
   def tanh(self):
     x = self.data
     t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-    output = Value(t, (self), 'tanh')
+    output = Value(t, (self, ), 'tanh')
 
     #Backpropagation for tanh operation
     def _backprop():

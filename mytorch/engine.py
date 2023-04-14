@@ -13,6 +13,15 @@ class Value:
   def __repr__(self):
     return f"Value(data={self.data}, grad={self.grad})"
 
+  def relu(self):
+    out = Value(max(self.data, 0), (self,), 'ReLU')
+
+    def _backprop():
+        self.grad += (out.data > 0) * out.grad
+    out._backprop = _backprop
+
+    return out
+
   def __add__(self, other):
     other = other if isinstance(other, Value) else Value(other)
     output = Value(self.data + other.data, (self, other), '+')

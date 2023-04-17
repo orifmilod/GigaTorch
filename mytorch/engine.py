@@ -3,18 +3,19 @@ import math
 class Value:
   """ stores a single scalar value and its gradient """
 
-  def __init__(self, data, _children=(), _op=''):
+  def __init__(self, data, _parents=[], _op=''):
     self.data = data
     self.grad = 0.0
     self._backprop = lambda: None
-    self._prev = set(_children)
+    self._parents = _parents
     self._op = _op
+    self.label = ''
 
   def __repr__(self):
     return f"Value(data={self.data}, grad={self.grad})"
 
   def relu(self):
-    out = Value(max(self.data, 0), (self,), 'ReLU')
+    out = Value(max(self.data, 0), [self], 'ReLU')
 
     def _backprop():
         self.grad += (out.data > 0) * out.grad
@@ -24,12 +25,16 @@ class Value:
 
   def __add__(self, other):
     other = other if isinstance(other, Value) else Value(other)
-    output = Value(self.data + other.data, (self, other), '+')
+    output = Value(self.data + other.data, [self, other], '+')
 
     # Backward propagation for addition operation
     def _backprop():
+      print(f"{self.data} was {self.grad} in add")
+      print(f"{other.data} was {other.grad} in add")
       self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
       other.grad += 1.0 * output.grad # same here
+      print(f"{self.data} become {self.grad}")
+      print(f"{other.data} become {other.grad}")
 
     output._backprop = _backprop
     return output
@@ -37,12 +42,16 @@ class Value:
   def __mul__(self, other):
     other = other if isinstance(other, Value) else Value(other)
 
-    output = Value(self.data * other.data, (self, other), '*')
+    output = Value(self.data * other.data, [self, other], '*')
 
     # Backward propagation for multiplication operation
     def _backprop():
+      print(f"{self.data} was {self.grad} in mul")
+      print(f"{other.data} was {other.grad} in mul")
       self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
       other.grad += self.data * output.grad  # same here
+      print(f"{self.data} become {self.grad}")
+      print(f"{other.data} become {other.grad}")
 
     output._backprop = _backprop
 
@@ -50,10 +59,12 @@ class Value:
 
   def __pow__(self, other):
     assert isinstance(other, (int, float)), "only supporting int/float powers for now"
-    output = Value(self.data ** other, (self, Value(other)), f'**{other}')
+    output = Value(self.data ** other, [self], f'**{other}')
 
     def _backprop():
-        self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
+      print(f"{self.data} was {self.grad} in pow")
+      self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
+      print(f"{self.data} become {self.grad}")
 
     output._backprop = _backprop
     return output
@@ -84,8 +95,8 @@ class Value:
     def _build_topological_sort(node, topo = [], visited = set()):
       if node not in visited:
         visited.add(node)
-        for child in node._prev:
-          _build_topological_sort(child, topo, visited)
+        for parent in node._parents:
+          _build_topological_sort(parent, topo, visited)
 
         topo.append(node)
 
@@ -95,20 +106,21 @@ class Value:
 
     # Propagate the gradient backprops
     self.grad = 1.0 # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
+    print("Topo:", topo)
     for node in reversed(topo):
-      print(f"calling backprop on {node}")
       node._backprop()
-      print(f"Grad became {node}")
 
 
   def tanh(self):
     x = self.data
     t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-    output = Value(t, (self, ), 'tanh')
+    output = Value(t, [self], 'tanh')
 
     #Backpropagation for tanh operation
     def _backprop():
+      print(f"{self.data} was {self.grad} in tanh")
       self.grad += (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+      print(f"{self.data} become {self.grad} in tanh")
 
     self._backprop = _backprop
     return output

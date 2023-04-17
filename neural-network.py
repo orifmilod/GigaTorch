@@ -1,14 +1,20 @@
 import random
 from mytorch.engine import Value
+import uuid
+from mytorch.visualize import draw_graph
+
+counter = 0
 
 class Neuron:
-  def __init__(self, number_of_neurons) -> None:
+  def __init__(self, number_of_neurons, nonlin=True) -> None:
     self.weights = [Value(random.uniform(-1, 1)) for _ in range(number_of_neurons)]
     self.bias = Value(random.uniform(-1, 1))
+    self.nonlin = nonlin
 
   def __call__(self, x):
     # w * x + b
     activation = sum(wi * xi for wi, xi in list(zip(self.weights, x))) + self.bias
+    activation.label = uuid.uuid1()
     return activation.tanh()
 
   def __repr__(self):
@@ -54,22 +60,26 @@ class MLP:
 
     return result
 
-xs = [
-  [2.0, 3.0, -1.0],
-  [3.0, -1.0, 0.5],
-  [0.5, 1.0, 1.0],
-  [1.0, 1.0, -1.0]
-]
+def main():
+  xs = [
+    [2.0, 3.0, -1.0],
+    [3.0, -1.0, 0.5],
+    [0.5, 1.0, 1.0],
+    [1.0, 1.0, -1.0]
+  ]
 
-ys = [1.0, -1.0, -1.0, 1.0]
+  ys = [1.0, -1.0, -1.0, 1.0]
 
-mlp = MLP(3, [4, 4, 1])
-print(mlp)
-y_pred = [mlp(x) for x in xs]
-print("Predicted", y_pred)
+  mlp = MLP(3, [4, 4, 1])
+  # print(mlp)
+  y_pred = [mlp(x) for x in xs]
+  # print("Predicted", y_pred)
 
-loss = sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
-print("Loss", loss)
-loss.backprop()
-print("\n\n")
-print(mlp)
+  loss = sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
+  print("Loss", loss)
+  loss.backprop()
+  draw_graph(loss)
+  # print(mlp)
+
+if __name__ == "__main__":
+  main()

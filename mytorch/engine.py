@@ -12,7 +12,7 @@ class Value:
     self.label = ''
 
   def __repr__(self):
-    return f"Value(data={self.data}, grad={self.grad})"
+    return f"Value(data={self.data}, grad={self.grad}, label={self.label})"
 
   def relu(self):
     out = Value(max(self.data, 0), [self], 'ReLU')
@@ -29,12 +29,8 @@ class Value:
 
     # Backward propagation for addition operation
     def _backprop():
-      print(f"{self.data} was {self.grad} in add")
-      print(f"{other.data} was {other.grad} in add")
       self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
       other.grad += 1.0 * output.grad # same here
-      print(f"{self.data} become {self.grad}")
-      print(f"{other.data} become {other.grad}")
 
     output._backprop = _backprop
     return output
@@ -46,12 +42,8 @@ class Value:
 
     # Backward propagation for multiplication operation
     def _backprop():
-      print(f"{self.data} was {self.grad} in mul")
-      print(f"{other.data} was {other.grad} in mul")
       self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
       other.grad += self.data * output.grad  # same here
-      print(f"{self.data} become {self.grad}")
-      print(f"{other.data} become {other.grad}")
 
     output._backprop = _backprop
 
@@ -62,9 +54,7 @@ class Value:
     output = Value(self.data ** other, [self], f'**{other}')
 
     def _backprop():
-      print(f"{self.data} was {self.grad} in pow")
       self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
-      print(f"{self.data} become {self.grad}")
 
     output._backprop = _backprop
     return output
@@ -106,7 +96,6 @@ class Value:
 
     # Propagate the gradient backprops
     self.grad = 1.0 # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
-    print("Topo:", topo)
     for node in reversed(topo):
       node._backprop()
 
@@ -118,11 +107,9 @@ class Value:
 
     #Backpropagation for tanh operation
     def _backprop():
-      print(f"{self.data} was {self.grad} in tanh")
       self.grad += (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
-      print(f"{self.data} become {self.grad} in tanh")
 
-    self._backprop = _backprop
+    output._backprop = _backprop
     return output
 
   def squared(self):

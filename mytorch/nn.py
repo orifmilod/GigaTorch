@@ -1,6 +1,5 @@
 import random
 from mytorch.engine import Value
-import uuid
 from mytorch.visualize import draw_graph, draw_dot
 
 class Neuron:
@@ -42,12 +41,10 @@ class MLP:
 
   def __init__(self, number_of_inputs, list_of_output) -> None:
     layers = [number_of_inputs] + list_of_output
-    print("All layers", layers)
     self.layers = [Layer(layers[i], layers[i + 1]) for i in range(len(list_of_output))]
 
   def __call__(self, x):
     for layer in self.layers:
-      print("Passing x", x)
       x = layer(x)
     return x
 

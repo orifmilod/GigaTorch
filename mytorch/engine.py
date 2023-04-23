@@ -3,13 +3,13 @@ import math
 class Value:
   """ stores a single scalar value and its gradient """
 
-  def __init__(self, data, _parents=[], _op=''):
-    self.data = data
+  def __init__(self, data, _parents=[], _op='', label = ''):
+    self.data = data.data if isinstance(data, Value) else data
     self.grad = 0.0
     self._backprop = lambda: None
     self._parents = _parents
     self._op = _op
-    self.label = ''
+    self.label = label
 
   def __repr__(self):
     return f"Value(data={self.data}, grad={self.grad}, label={self.label})"
@@ -37,7 +37,6 @@ class Value:
 
   def __mul__(self, other):
     other = other if isinstance(other, Value) else Value(other)
-
     output = Value(self.data * other.data, [self, other], '*')
 
     # Backward propagation for multiplication operation
@@ -101,6 +100,7 @@ class Value:
 
 
   def tanh(self):
+    # other = other if isinstance(other, Value) else Value(other)
     x = self.data
     t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
     output = Value(t, [self], 'tanh')

@@ -1,6 +1,6 @@
 from mytorch.nn import Neuron, Layer, MLP
 from mytorch.engine import Value
-from torch import nn
+from torch import Tensor, nn
 
 def test_neuron():
   number_of_inputs = 3
@@ -19,9 +19,9 @@ def test_neuron():
 
 def test_layer():
   number_of_inputs = 3
-  number_of_neurons = 2
+  neurons_per_layer = 2
 
-  layer = Layer(number_of_inputs, number_of_neurons)
+  layer = Layer(number_of_inputs, neurons_per_layer)
 
   neuron_weights = [
     [1, 0.5, -1], # -> tanh(0.75)
@@ -29,7 +29,7 @@ def test_layer():
   ]
   neuron_biases = [-3, 2]
 
-  for i in range(number_of_neurons):
+  for i in range(neurons_per_layer):
     layer.neurons[i].weights = neuron_weights[i] # todo: convert to Value type
     layer.neurons[i].bias = Value(neuron_biases[i])
 
@@ -42,14 +42,13 @@ def test_layer():
   ]
 
   tol = 1e-6
-  for i in range(number_of_neurons):
+  for i in range(neurons_per_layer):
     assert abs(expected[i] - outputs[i].data) < tol
 
 #TODO: Write this test comparing to pytorch
 def test_mlp():
-  number_of_inputs  = 3 # Input for each layer to the neurons
-  number_of_neurons = [2, 3] # neurons for each layer
-  number_of_layers = 2
+  number_of_inputs = 3 # Input for each layer to the neurons
+  neurons_per_layer = [2, 3] # neurons for each layer
   neuron_weigths = [
     [ # 1st layer
       [-1, 4, -3],  # -> tanh(-0.25)
@@ -66,28 +65,36 @@ def test_mlp():
     [1, -2, -1]
   ]
 
-  mlp = MLP(number_of_inputs, number_of_neurons)
+  mlp = MLP(number_of_inputs, neurons_per_layer)
 
-  for i in range(number_of_layers):
-    for j in range(number_of_neurons[i]):
+  # Setting the weights and biases in my NN
+  for i in range(len(neurons_per_layer)):
+    for j in range(neurons_per_layer[i]):
       mlp.layers[i].neurons[j].weights = neuron_weigths[i][j]
       mlp.layers[i].neurons[j].bias = Value(neuron_biases[i][j])
 
   x = [2, -1.5, -2.5]
-  print("Start nn", x)
   output = mlp(x)
-  print(output)
 
   model = nn.Sequential(
-    nn.Linear(number_of_inputs, number_of_neurons[0]),
-    nn.Linear(number_of_neurons[0], number_of_neurons[1]),
+    nn.Linear(number_of_inputs, neurons_per_layer[0]),
+    nn.Tanh(),
+    nn.Linear(neurons_per_layer[0], neurons_per_layer[1]),
+    nn.Tanh()
   )
-  expected = [
-    -0.56158748006,
-    0.37155874194
-  ]
 
-  assert False
+  # Setting the weights and biases in PyTorch
+  model[0].weight = nn.Parameter(Tensor(neuron_weigths[0]))
+  model[0].bias = nn.Parameter(Tensor(neuron_biases[0]))
+
+  model[2].weight = nn.Parameter(Tensor(neuron_weigths[1]))
+  model[2].bias = nn.Parameter(Tensor(neuron_biases[1]))
+
+  result = model(Tensor(x))
+
+  tol = 1e-6
+  for i in range(len(x)):
+    assert abs(output[i].data - result[i].item()) < tol
 
 
 def test_mlp_with_loss_function():

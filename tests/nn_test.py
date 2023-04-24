@@ -45,8 +45,7 @@ def test_layer():
   for i in range(neurons_per_layer):
     assert abs(expected[i] - outputs[i].data) < tol
 
-#TODO: Write this test comparing to pytorch
-def test_mlp():
+def test_mlp_forward_pass():
   number_of_inputs = 3 # Input for each layer to the neurons
   neurons_per_layer = [2, 3] # neurons for each layer
   neuron_weigths = [
@@ -98,4 +97,7 @@ def test_mlp():
 
 
 def test_mlp_with_loss_function():
+  pass
+
+def test_mlp_backward_pass():
   pass

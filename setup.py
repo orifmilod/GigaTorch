@@ -6,6 +6,7 @@ setup(
     author="Orif Milod",
     packages = find_packages(),
     test_suite="tests",
+    packages = find_packages(exclude=["test"]),
     install_requires=[
        'graphviz',
        'torch',

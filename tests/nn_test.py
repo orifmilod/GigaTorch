@@ -95,9 +95,37 @@ def test_mlp_forward_pass():
   for i in range(len(x)):
     assert abs(output[i].data - result[i].item()) < tol
 
-
 def test_mlp_with_loss_function():
-  pass
+  number_of_inputs = 3 # Input for each layer to the neurons
+  neurons_per_layer = [2, 3] # neurons for each layer
+  neuron_weigths = [
+    [ # 1st layer
+      [-1, 4, -3],  # -> tanh(-0.25)
+      [1, 0.5, -1]  # -> tanh(0.75)
+    ],
+    [ # 2nd layer
+      [0, 1],  # (tanh(-0.25) * 0) + (tanh(-0.75) * 1) -> tanh(tanh(-0.75))
+      [-1, 1], # (tanh(-0.25) * -1) + (tanh(-0.75) * 1) -> tanh(0.39023028998)
+      [-1, 0]  # 
+    ]
+  ]
+  neuron_biases = [
+    [-3, 2],
+    [1, -2, -1]
+  ]
+
+  mlp = MLP(number_of_inputs, neurons_per_layer)
+
+  # Setting the weights and biases in my NN
+  for i in range(len(neurons_per_layer)):
+    for j in range(neurons_per_layer[i]):
+      mlp.layers[i].neurons[j].weights = neuron_weigths[i][j]
+      mlp.layers[i].neurons[j].bias = Value(neuron_biases[i][j])
+
+  x = [2, -1.5, -2.5]
+  output = mlp(x)
+
+  print(output)
 
 def test_mlp_backward_pass():
   pass

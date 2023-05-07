@@ -118,3 +118,11 @@ def test_more_ops():
   # backward pass went well
   assert abs(amg.grad - apt.grad.item()) < tol
   assert abs(bmg.grad - bpt.grad.item()) < tol
+
+def test_sub_operation():
+  a = Value(1.2)
+  a -= 0.2
+  assert a.data == 1.0
+
+  a -= Value(0.5)
+  assert a.data == 0.5

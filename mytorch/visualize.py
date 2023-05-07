@@ -90,11 +90,3 @@ def draw_dot(root, format='svg', rankdir='LR'):
             # create vertex
 
             # create edges between vertex and other nodes
-
-
-
-
-
-
-
-

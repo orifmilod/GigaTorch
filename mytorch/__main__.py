@@ -1,5 +1,6 @@
 from .nn import MLP
 from .visualize import draw_dot, draw_graph
+from mytorch.engine import Value
 
 def add_labels(mlp):
   for layer_index in range(len(mlp.layers)):
@@ -15,7 +16,7 @@ def loss_fn(ys, y_pred):
 
 def main():
   xs = [
-    [2.0, 3.0],
+    [Value(2.0), Value(3.0)],
     # [3.0, -1.0, 0.5],
     # [0.5, 1.0, 1.0],
     # [1.0, 1.0, -1.0],
@@ -37,17 +38,13 @@ def main():
     loss.backprop()
     print("Loss", loss)
     print(mlp)
-    print("Here", mlp.layers[0].neurons[0].weights[0].grad)
 
     #update the weights and biases
     for layer in mlp.layers:
       for neuron in layer.neurons:
-        print(f"Updating neuron w and b {neuron}")
-
         for w in neuron.weights:
           w.data -= w.grad * learning_rate
         neuron.bias -= neuron.bias.grad * learning_rate
-        print(f"Updated neuron w and b {neuron}")
 
 if __name__ == "__main__":
   main()

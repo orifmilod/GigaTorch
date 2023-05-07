@@ -89,11 +89,11 @@ def test_mlp_forward_pass():
   model[2].weight = nn.Parameter(Tensor(neuron_weigths[1]))
   model[2].bias = nn.Parameter(Tensor(neuron_biases[1]))
 
-  result = model(Tensor(x))
+  expected= model(Tensor(x))
 
   tol = 1e-6
   for i in range(len(x)):
-    assert abs(output[i].data - result[i].item()) < tol
+    assert abs(output[i].data - expected[i].item()) < tol
 
 def test_mlp_with_loss_function():
   number_of_inputs = 3 # Input for each layer to the neurons

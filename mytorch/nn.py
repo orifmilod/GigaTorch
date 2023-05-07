@@ -44,7 +44,6 @@ class MLP:
 
   def __call__(self, x):
     for layer in self.layers:
-      print("Input x into layer", x)
       x = layer(x)
     return x
 

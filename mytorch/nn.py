@@ -10,8 +10,13 @@ class Neuron:
 
   def __call__(self, x):
     # w * x + b
-    activation = sum(wi * xi for wi, xi in list(zip(self.weights, x))) + self.bias
-    return activation.tanh()
+    total = Value(0)
+    for i in range(len(self.weights)):
+      total += self.weights[i] * x[i]
+
+    total += self.bias
+    # activation = sum(wi * xi for wi, xi in list(zip([self.weights], [x]))) + 
+    return total.tanh()
 
   def __repr__(self):
     return f"Weights:\n{self.weights} \nBias: \n{self.bias}\n"

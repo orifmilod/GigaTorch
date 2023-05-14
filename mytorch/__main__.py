@@ -16,28 +16,24 @@ def loss_fn(ys, y_pred):
 
 def main():
   xs = [
-    [Value(2.0), Value(3.0)],
-    # [3.0, -1.0, 0.5],
-    # [0.5, 1.0, 1.0],
-    # [1.0, 1.0, -1.0],
+    [Value(2.0), Value(3.0), Value(-1.5)],
+    [Value(3.0), Value(-1.0), Value(0.5)],
+    [Value(0.5), Value(1.0), Value(1.0)],
+    [Value(1.0), Value(1.0), Value(-1.0)],
   ]
 
-  ys = [1.0] #, -1.0, -1.0, 1.0]
-  mlp = MLP(2, [2, 1])
-  # add_labels(mlp)
-  # draw_dot(loss)
-  # draw_graph(loss)
+  ys = [1.0, -1.0, -1.0, 1.0]
+  mlp = MLP(3, [4, 4, 1])
 
   # Training the network
-  learning_rate = 0.1
-  epochs = 1
+  learning_rate = 0.01
+  epochs = 100
   for epoch in range(epochs):
     print(f"Epoch {epoch + 1}")
     y_pred = [mlp(x) for x in xs][0]
     loss = loss_fn(ys, y_pred)
     loss.backprop()
     print("Loss", loss)
-    print(mlp)
 
     #update the weights and biases
     for layer in mlp.layers:

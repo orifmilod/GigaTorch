@@ -1,5 +1,4 @@
 from .nn import MLP
-from .visualize import draw_dot, draw_graph
 from mytorch.engine import Value
 
 def add_labels(mlp):
@@ -27,13 +26,12 @@ def main():
 
   # Training the network
   learning_rate = 0.01
-  epochs = 100
+  epochs = 10
   for epoch in range(epochs):
     print(f"Epoch {epoch + 1}")
     y_pred = [mlp(x) for x in xs][0]
-    loss = loss_fn(ys, y_pred)
-    loss.backprop()
-    print("Loss", loss)
+    loss = mlp.calc_loss(ys, y_pred)
+    print("Loss", 100 - loss.data)
 
     #update the weights and biases
     for layer in mlp.layers:

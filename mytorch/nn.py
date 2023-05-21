@@ -1,6 +1,5 @@
 import random
 from mytorch.engine import Value
-# from mytorch.visualize import draw_graph, draw_dot
 
 class Neuron:
   def __init__(self, number_of_input, nonlin=True) -> None:
@@ -42,6 +41,8 @@ class Layer:
 
 class MLP:
   """ Multi Layered Perceptron """
+  def squared_loss(self, ys: list[Value], y_pred: list[Value]) -> Value:
+    return sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
 
   def __init__(self, number_of_inputs, nuerons_per_layers) -> None:
     layers = [number_of_inputs] + nuerons_per_layers
@@ -52,14 +53,21 @@ class MLP:
       x = layer(x)
     return x
 
+  def calc_loss(self, ys, y_pred, loss_fn = 'sqr'):
+    if(loss_fn == 'sqr'):
+      loss = self.squared_loss(ys, y_pred)
+      loss.backprop()
+      return loss
+    else:
+      raise f"Unknonw loss function {loss_fn}"
+
   def __repr__(self):
     result = ''
 
     for i in range(len(self.layers)):
       layer = self.layers[i]
-      result += f"Layer {i + 1} with {len(layer.neurons)} neurons accepting {layer.number_of_inputs}\n"
+      result += f"Layer {i + 1} with {len(layer.neurons)} neurons accepting {layer.number_of_inputs} inputs\n"
       result += repr(layer)
       result += '###########\n'
 
     return result
-

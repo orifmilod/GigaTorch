@@ -1,6 +1,6 @@
 from mytorch.nn import Neuron, Layer, MLP
 from mytorch.engine import Value
-from torch import Tensor, nn
+from torch import Tensor, allclose, nn
 
 def test_neuron():
   number_of_inputs = 3
@@ -200,10 +200,4 @@ def test_mlp_backward_pass():
     for neuron_index in range(neurons_per_layer[layer_index]):
       neuron = my_layer.neurons[neuron_index]
       ws = [w.grad for w in neuron.weights]
-      # TODO: The differece is quite high, what is wrong?
-      print(Tensor(ws))
-      print(py_layer[layer_index])
-
-    print("\n\n")
-
-  assert False
+      assert allclose(Tensor(ws), py_layer[neuron_index], atol=tol)

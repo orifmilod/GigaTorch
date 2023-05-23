@@ -41,7 +41,7 @@ class Layer:
 
 class MLP:
   """ Multi Layered Perceptron """
-  def squared_loss(self, ys: list[Value], y_pred: list[Value]) -> Value:
+  def squared_loss(self, ys, y_pred):
     return sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
 
   def __init__(self, number_of_inputs, nuerons_per_layers) -> None:

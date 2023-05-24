@@ -1,117 +1,130 @@
 import math
 
+
 class Value:
-  """ stores a single scalar value and its gradient """
+    """stores a single scalar value and its gradient"""
 
-  def __init__(self, data, _parents=[], _op='', label = ''):
-    self.data = data.data if isinstance(data, Value) else data
-    self.grad = 0.0
-    self._backprop = lambda: None
-    self._parents = _parents
-    self._op = _op
-    self.label = label
+    def __init__(self, data, _parents=[], _op="", label=""):
+        self.data = data.data if isinstance(data, Value) else data
+        self.grad = 0.0
+        self._backprop = lambda: None
+        self._parents = _parents
+        self._op = _op
+        self.label = label
 
-  def __repr__(self):
-    return f"Value(data={self.data}, grad={self.grad}, label={self.label})"
+    def __repr__(self):
+        return f"Value(data={self.data}, grad={self.grad}, label={self.label})"
 
-  def relu(self):
-    out = Value(max(self.data, 0), [self], 'ReLU')
+    def relu(self):
+        out = Value(max(self.data, 0), [self], "ReLU")
 
-    def _backprop():
-        self.grad += (out.data > 0) * out.grad
-    out._backprop = _backprop
+        def _backprop():
+            self.grad += (out.data > 0) * out.grad
 
-    return out
+        out._backprop = _backprop
 
-  def __add__(self, other):
-    other = other if isinstance(other, Value) else Value(other)
-    output = Value(self.data + other.data, [self, other], '+')
+        return out
 
-    # Backward propagation for addition operation
-    def _backprop():
-      self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
-      other.grad += 1.0 * output.grad # same here
+    def __add__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        output = Value(self.data + other.data, [self, other], "+")
 
-    output._backprop = _backprop
-    return output
+        # Backward propagation for addition operation
+        def _backprop():
+            self.grad += (
+                1.0 * output.grad
+            )  # (Derivative with respect to itself) * output gradient
+            other.grad += 1.0 * output.grad  # same here
 
-  def __mul__(self, other):
-    other = other if isinstance(other, Value) else Value(other)
-    output = Value(self.data * other.data, [self, other], '*')
+        output._backprop = _backprop
+        return output
 
-    # Backward propagation for multiplication operation
-    def _backprop():
-      self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
-      other.grad += self.data * output.grad  # same here
+    def __mul__(self, other):
+        other = other if isinstance(other, Value) else Value(other)
+        output = Value(self.data * other.data, [self, other], "*")
 
-    output._backprop = _backprop
+        # Backward propagation for multiplication operation
+        def _backprop():
+            self.grad += (
+                other.data * output.grad
+            )  # (Derivative with respect to itself) * output gradient
+            other.grad += self.data * output.grad  # same here
 
-    return output
+        output._backprop = _backprop
 
-  def __pow__(self, other):
-    assert isinstance(other, (int, float)), "only supporting int/float powers for now"
-    output = Value(self.data ** other, [self], f'**{other}')
+        return output
 
-    def _backprop():
-      self.grad += (other * self.data ** (other - 1)) * output.grad # (derivative of the power) * (output gradient)
+    def __pow__(self, other):
+        assert isinstance(
+            other, (int, float)
+        ), "only supporting int/float powers for now"
+        output = Value(self.data**other, [self], f"**{other}")
 
-    output._backprop = _backprop
-    return output
+        def _backprop():
+            self.grad += (
+                other * self.data ** (other - 1)
+            ) * output.grad  # (derivative of the power) * (output gradient)
 
-  def __neg__(self):
-    return self * -1
+        output._backprop = _backprop
+        return output
 
-  def __radd__(self, other):
-    return self + other
+    def __neg__(self):
+        return self * -1
 
-  def __sub__(self, other):
-    return self + (-other)
+    def __radd__(self, other):
+        return self + other
 
-  def __rsub__(self, other):
-    return other + (-self)
+    def __sub__(self, other):
+        return self + (-other)
 
-  def __rmul__(self, other):
-    return self * other
+    def __rsub__(self, other):
+        return other + (-self)
 
-  def __truediv__(self, other):
-    return self * other ** -1
+    def __rmul__(self, other):
+        return self * other
 
-  def __rtruediv__(self, other):
-    return other * self ** -1
+    def __truediv__(self, other):
+        return self * other**-1
 
-  def backprop(self):
-    # Used for calculating gradient of the nodes in order
-    def _build_topological_sort(node, topo = [], visited = set()):
-      if node not in visited:
-        visited.add(node)
-        for parent in node._parents:
-          _build_topological_sort(parent, topo, visited)
+    def __rtruediv__(self, other):
+        return other * self**-1
 
-        topo.append(node)
+    def backprop(self):
+        # Used for calculating gradient of the nodes in order
+        def _build_topological_sort(node, topo=[], visited=set()):
+            if node not in visited:
+                visited.add(node)
+                for parent in node._parents:
+                    _build_topological_sort(parent, topo, visited)
 
-      return topo
+                topo.append(node)
 
-    topo = _build_topological_sort(self)
+            return topo
 
-    # Propagate the gradient backprops
-    self.grad = 1.0 # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
-    for node in reversed(topo):
-      node._backprop()
+        topo = _build_topological_sort(self)
 
+        # Propagate the gradient backprops
+        self.grad = (
+            1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
+        )
+        for node in reversed(topo):
+            node._backprop()
 
-  def tanh(self):
-    # other = other if isinstance(other, Value) else Value(other)
-    x = self.data
-    t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-    output = Value(t, [self], 'tanh')
+    def tanh(self):
+        # other = other if isinstance(other, Value) else Value(other)
+        x = self.data
+        t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
+        output = Value(t, [self], "tanh")
 
-    #Backpropagation for tanh operation
-    def _backprop():
-      self.grad += (1 - t ** 2) * output.grad # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+        # Backpropagation for tanh operation
+        def _backprop():
+            self.grad += (
+                1 - t**2
+            ) * output.grad  # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
 
-    output._backprop = _backprop
-    return output
+        output._backprop = _backprop
+        return output
 
-  def squared(self):
-      # implement squared loss computation
-      pass
+    def squared(self):
+        # implement squared loss computation
+        pass

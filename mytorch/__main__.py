@@ -1,5 +1,6 @@
 from .nn import MLP
 from mytorch.engine import Value
+from .cnn import CNN
 
 
 def add_labels(mlp):
@@ -45,4 +46,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    cnn = CNN('./data/mnist/training', './data/mnist/testing', [i for i in range(10)])
+    cnn.train()
+    cnn.test()
+

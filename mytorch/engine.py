@@ -1,6 +1,8 @@
 import math
+from functools import total_ordering
 
 
+@total_ordering
 class Value:
     """stores a single scalar value and its gradient"""
 
@@ -13,7 +15,7 @@ class Value:
         self.label = label
 
     def __repr__(self):
-        return f"Value(data={self.data}, grad={self.grad}, label={self.label})"
+        return f"{self.data}"
 
     def relu(self):
         out = Value(max(self.data, 0), [self], "ReLU")
@@ -88,6 +90,15 @@ class Value:
 
     def __rtruediv__(self, other):
         return other * self**-1
+
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        return self.data == (other.data if isinstance(other, Value) else other)
+
+    def __gt__(self, other):
+        return self.data > (other.data if isinstance(other, Value) else other)
 
     def backprop(self):
         # Used for calculating gradient of the nodes in order

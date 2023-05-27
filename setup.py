@@ -7,8 +7,14 @@ setup(
     author="Orif Milod",
     packages=find_packages(exclude=["test"]),
     test_suite="tests",
-    install_requires=["graphviz", "torch", "setuptools-black"],
+    install_requires=["graphviz", "torch", "setuptools-black", "Pillow", "numpy"],
     cmdclass={
         "build": setuptools_black.BuildCommand,
+    },
+    extras_require={
+        "testing": [
+            "torch",
+            "pytest",
+        ],
     },
 )

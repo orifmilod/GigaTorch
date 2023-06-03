@@ -1,9 +1,11 @@
+from mytorch import weight_init
 from .engine import Value
 from PIL import Image
 import numpy as np
 from abc import ABC, abstractmethod
 from os import listdir
 from os.path import join
+from mytorch.weight_init import WightInitializer
 
 
 class Compute(ABC):
@@ -52,8 +54,7 @@ class Conv2D(Compute):
     def __init__(self, in_channels, out_channels, kernel_size, activation_fn):
         self.in_channels = in_channels
         self.out_channels = out_channels
-        # TODO: Generate it randomly? What is a good way of initalizing Kernel weights?
-        self.kernel = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        self.kernel = WightInitializer().xavier_normal(3, 3)
         self.kernel_size = kernel_size
         self.activation_fn = activation_fn
 

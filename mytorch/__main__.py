@@ -47,7 +47,6 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    cnn = CNN('./data/mnist/training', './data/mnist/testing', [i for i in range(10)])
+    cnn = CNN("./data/mnist/training", "./data/mnist/testing", [i for i in range(10)])
     cnn.train()
     cnn.test()
-

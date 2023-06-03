@@ -10,6 +10,16 @@ python setup.py build
 ```
 python setup.py format
 ``` 
+
+### Run the tests 
+```
+pytest
+```
+
 ## Features to add
 - [x] Add AutoGrad https://pytorch.org/tutorials/beginner/introyt/autogradyt_tutorial.html
-- [ ] GPU supported tensors
+- [x] Create Convolution neural-network using MyTorch
+- [ ] Create Recurrent neural-network using MyTorch. 
+- [ ] Add support for CUDA
+- [ ] Add support for ANE (Apple Neural Engine)
+- [ ] Add support for Google TPU 

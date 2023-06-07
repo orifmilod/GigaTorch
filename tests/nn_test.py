@@ -1,3 +1,4 @@
+from mytorch.loss import squared_loss
 from mytorch.nn import Neuron, Layer, MLP
 from mytorch.engine import Value
 from torch import Tensor, allclose, nn
@@ -54,7 +55,7 @@ def test_mlp_forward_pass():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
@@ -99,7 +100,7 @@ def test_mlp_with_loss_function():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
@@ -127,7 +128,7 @@ def test_mlp_backward_pass():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1], [1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
@@ -168,7 +169,7 @@ def test_mlp_backward_pass():
     py_loss.backward()
 
     tol = 1e-6
-    assert abs(py_loss.item() - my_loss.data) < tol
+    assert abs(py_loss.item() - my_loss) < tol
     assert abs(py_output.item() - my_output.data) < tol
 
     for layer_index in range(len(neurons_per_layer)):

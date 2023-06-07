@@ -15,7 +15,7 @@ class Value:
         self.label = label
 
     def __repr__(self):
-        return f"{self.data}"
+        return f"d:{self.data}"
 
     def relu(self):
         out = Value(max(self.data, 0), [self], "ReLU")

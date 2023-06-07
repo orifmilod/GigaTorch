@@ -1,3 +1,4 @@
+from mytorch.loss import squared_loss
 from .nn import MLP
 from mytorch.engine import Value
 from .cnn import CNN
@@ -26,7 +27,7 @@ def main():
     ]
 
     ys = [1.0, -1.0, -1.0, 1.0]
-    mlp = MLP(3, [4, 4, 1])
+    mlp = MLP(3, [4, 4, 1], squared_loss)
 
     # Training the network
     learning_rate = 0.01
@@ -47,6 +48,6 @@ def main():
 
 if __name__ == "__main__":
     # main()
-    cnn = CNN("./data/mnist/training", "./data/mnist/testing", [i for i in range(10)])
+    cnn = CNN("./temp/", "./data/mnist/testing", [i for i in range(1)])
     cnn.train()
-    cnn.test()
+    # cnn.test()

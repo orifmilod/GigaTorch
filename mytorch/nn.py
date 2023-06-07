@@ -1,7 +1,6 @@
 import random
 from mytorch.engine import Value
 
-
 class Neuron:
     def __init__(self, number_of_input, nonlin=True) -> None:
         self.weights = [
@@ -46,28 +45,22 @@ class Layer:
 
 class MLP:
     """Multi Layered Perceptron"""
-
-    def squared_loss(self, ys, y_pred):
-        return sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
-
-    def __init__(self, number_of_inputs, nuerons_per_layers) -> None:
+    def __init__(self, number_of_inputs, nuerons_per_layers, loss_fn) -> None:
         layers = [number_of_inputs] + nuerons_per_layers
         self.layers = [
             Layer(layers[i], layers[i + 1]) for i in range(len(nuerons_per_layers))
         ]
+        self.loss_fn = loss_fn
 
     def __call__(self, x):
         for layer in self.layers:
             x = layer(x)
         return x
 
-    def calc_loss(self, ys, y_pred, loss_fn="sqr"):
-        if loss_fn == "sqr":
-            loss = self.squared_loss(ys, y_pred)
-            loss.backprop()
-            return loss
-        else:
-            raise f"Unknonw loss function {loss_fn}"
+    def calc_loss(self, ys, y_pred):
+        loss = self.loss_fn(ys, y_pred)
+        loss.backprop()
+        return loss.data
 
     def __repr__(self):
         result = ""

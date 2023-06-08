@@ -10,13 +10,7 @@ class Neuron:
         self.nonlin = nonlin
 
     def __call__(self, x):
-        # w * x + b
-        total = Value(0)
-        for i in range(len(self.weights)):
-            total += self.weights[i] * x[i]
-
-        total += self.bias
-        # activation = sum(wi * xi for wi, xi in list(zip([self.weights], [x]))) +
+        total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Value(0)) + self.bias
         return total.tanh()
 
     def __repr__(self):

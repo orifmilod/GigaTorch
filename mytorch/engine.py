@@ -53,18 +53,18 @@ class Value:
             other.grad += self.data * output.grad  # same here
 
         output._backprop = _backprop
-
         return output
 
+    def __float__(self):
+        return float(self.data)
+
     def __pow__(self, other):
-        assert isinstance(
-            other, (int, float)
-        ), "only supporting int/float powers for now"
-        output = Value(self.data**other, [self], f"**{other}")
+        other = other if isinstance(other, Value) else Value(other)
+        output = Value(self.data**other.data, [self], f"**{other.data}")
 
         def _backprop():
             self.grad += (
-                other * self.data ** (other - 1)
+                other.data * self.data ** (other.data - 1)
             ) * output.grad  # (derivative of the power) * (output gradient)
 
         output._backprop = _backprop
@@ -135,7 +135,3 @@ class Value:
 
         output._backprop = _backprop
         return output
-
-    def squared(self):
-        # implement squared loss computation
-        pass

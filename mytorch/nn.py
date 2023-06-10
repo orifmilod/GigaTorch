@@ -1,12 +1,13 @@
 import random
+from typing import List
 from mytorch.engine import Value
 
 class Neuron:
     def __init__(self, number_of_input, nonlin=True) -> None:
         self.weights = [
-            Value(random.uniform(-1, 1), label="weight") for _ in range(number_of_input)
+            Value(random.uniform(-1, 1)) for _ in range(number_of_input)
         ]
-        self.bias = Value(random.uniform(-1, 1), label="bias")
+        self.bias = Value(random.uniform(-1, 1))
         self.nonlin = nonlin
 
     def __call__(self, x):
@@ -39,12 +40,13 @@ class Layer:
 
 class MLP:
     """Multi Layered Perceptron"""
-    def __init__(self, number_of_inputs, nuerons_per_layers, loss_fn) -> None:
+    def __init__(self, number_of_inputs, nuerons_per_layers, loss_fn, prob_fn) -> None:
         layers = [number_of_inputs] + nuerons_per_layers
         self.layers = [
             Layer(layers[i], layers[i + 1]) for i in range(len(nuerons_per_layers))
         ]
         self.loss_fn = loss_fn
+        self.prob_fn = prob_fn
 
     def __call__(self, x):
         for layer in self.layers:
@@ -52,7 +54,10 @@ class MLP:
         return x
 
     def calc_loss(self, ys, y_pred):
-        loss = self.loss_fn(ys, y_pred)
+        # Convertin y_pred to probabilities
+        prob = [self.prob_fn(i, y_pred) for i in y_pred]
+        print("Prob", prob)
+        loss = sum(self.loss_fn(ys, y_pred), Value(0))
         loss.backprop()
         return loss.data
 

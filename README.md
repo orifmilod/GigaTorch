@@ -1,15 +1,21 @@
 <h1 align="center">GigaTorch</h1>
-<p align="center">
-  <img alt="GigaTorch Logo" src="https://github.com/orifmilod/GigaTorch/assets/25881325/f9c41ced-f01a-4511-a301-6c18e64b02d3" width=235 borderRadius="50%" style="border-radius: 50%;">
+<div align="center">
+  <img alt="GigaTorch Logo" src="https://github.com/orifmilod/GigaTorch/assets/25881325/f9c41ced-f01a-4511-a301-6c18e64b02d3" width=235/>
   <br/>
-  GigaTorch: Something between [PyTorch](https://github.com/pytorch/pytorch) and [TinyGrad](https://github.com/geohot/tinygrad). Maintained by GigaChads around the world.
-</p>
+  GigaTorch: Something between <a href="https://github.com/pytorch/pytorch">PyTorch</a> and <a href="https://github.com/geohot/tinygrad">TinyGrad</a>. Maintained by GigaChads around the world.
+</div>
+<br/>  <br/>
+
 
 Welcome to GigaTorch, the revolutionary machine learning framework that takes the art of neural network training to unprecedented levels. It is not just any machine learning framework, GigaTorch is a true game-changer that caters specifically to the needs of GigaChads, those exceptional individuals in the field of deep learning.
 
 GigaTorch finds the perfect balance between power and simplicity, rivaling the likes of PyTorch and Tinygrad. It offers an unparalleled ML ecosystem designed to unlock the full potential of GigaChad neural networks, enabling practitioners to achieve remarkable results with ease.
 
 Join the ranks of GigaChads and harness the power of GigaTorch to propel your machine learning projects to unparalleled heights. Together, let's shape the future of artificial intelligence as GigaChads.
+
+![Screenshot 2023-06-11 at 13 41 13](https://github.com/orifmilod/GigaTorch/assets/25881325/ad2f64c8-d8b1-4d45-a3e0-c7e77785edea) 
+<p align='center'> Simple Feed Forward Neural Net with Giga Neurons for classifying GigaChads. <p/>
+<br/> 
 
 Key Features: (it's actually our vision)
 

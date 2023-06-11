@@ -1,6 +1,6 @@
-from mytorch.loss import squared_loss
+from mytorch.loss import softmax, squared_loss
 from .nn import MLP
-from mytorch.engine import Value
+from mytorch.tensor import Tensor
 from .cnn import CNN
 
 
@@ -20,14 +20,14 @@ def loss_fn(ys, y_pred):
 
 def main():
     xs = [
-        [Value(2.0), Value(3.0), Value(-1.5)],
-        [Value(3.0), Value(-1.0), Value(0.5)],
-        [Value(0.5), Value(1.0), Value(1.0)],
-        [Value(1.0), Value(1.0), Value(-1.0)],
+        [Tensor(2.0), Tensor(3.0), Tensor(-1.5)],
+        [Tensor(3.0), Tensor(-1.0), Tensor(0.5)],
+        [Tensor(0.5), Tensor(1.0), Tensor(1.0)],
+        [Tensor(1.0), Tensor(1.0), Tensor(-1.0)],
     ]
 
     ys = [1.0, -1.0, -1.0, 1.0]
-    mlp = MLP(3, [4, 4, 1], squared_loss)
+    mlp = MLP(3, [4, 4, 1], squared_loss, prob_fn=softmax)
 
     # Training the network
     learning_rate = 0.01

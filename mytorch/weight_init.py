@@ -1,5 +1,5 @@
 from random import uniform
-from mytorch.engine import Value
+from mytorch.tensor import Tensor
 from math import sqrt
 
 
@@ -15,7 +15,7 @@ from math import sqrt
 class WightInitializer:
     # Using same constants as Keras: https://keras.io/api/layers/initializers/
     def _generate(self, x, y, limit):
-        return [[Value(uniform(-1, 1) * limit) for _ in range(y)] for _ in range(x)]
+        return [[Tensor(uniform(-1, 1) * limit) for _ in range(y)] for _ in range(x)]
 
     # Paper: http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf
     def xavier_uniform(self, fan_in: int, fan_out: int, rows: int, columns: int):

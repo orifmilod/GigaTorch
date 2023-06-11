@@ -1,10 +1,10 @@
-from mytorch.engine import Value
+from mytorch.tensor import Tensor
 
 import torch
 
 
 def test_addition():
-    a = Value(3.0)
+    a = Tensor(3.0)
     b = a + a
 
     b.grad = 1.0
@@ -18,8 +18,8 @@ def test_addition():
 
 
 def test_multiplication():
-    a = Value(2.0)
-    b = Value(4.0)
+    a = Tensor(2.0)
+    b = Tensor(4.0)
     c = a * b
 
     c.grad = 1.0
@@ -33,8 +33,8 @@ def test_multiplication():
 
 
 def test_complex():
-    a = Value(-2.0)
-    b = Value(3.0)
+    a = Tensor(-2.0)
+    b = Tensor(3.0)
 
     c = a + b  # 1
     d = a * b  # -6
@@ -61,7 +61,7 @@ def test_complex():
 
 
 def test_sanity_check():
-    x = Value(-4.0)
+    x = Tensor(-4.0)
     x.label = "x"
     z = 2 * x + 2 + x
     z.label = "z"
@@ -90,8 +90,8 @@ def test_sanity_check():
 
 
 def test_more_ops():
-    a = Value(-4.0)
-    b = Value(2.0)
+    a = Tensor(-4.0)
+    b = Tensor(2.0)
     c = a + b
     d = a * b + b**3
     c += c + 1
@@ -131,9 +131,9 @@ def test_more_ops():
 
 
 def test_sub_operation():
-    a = Value(1.2)
+    a = Tensor(1.2)
     a -= 0.2
     assert a.data == 1.0
 
-    a -= Value(0.5)
+    a -= Tensor(0.5)
     assert a.data == 0.5

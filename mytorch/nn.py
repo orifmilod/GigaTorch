@@ -1,17 +1,17 @@
 import random
 from typing import List
-from mytorch.engine import Value
+from mytorch.tensor import Tensor
 
 class Neuron:
     def __init__(self, number_of_input, nonlin=True) -> None:
         self.weights = [
-            Value(random.uniform(-1, 1)) for _ in range(number_of_input)
+            Tensor(random.uniform(-1, 1)) for _ in range(number_of_input)
         ]
-        self.bias = Value(random.uniform(-1, 1))
+        self.bias = Tensor(random.uniform(-1, 1))
         self.nonlin = nonlin
 
     def __call__(self, x):
-        total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Value(0)) + self.bias
+        total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0)) + self.bias
         return total.tanh()
 
     def __repr__(self):
@@ -57,7 +57,7 @@ class MLP:
         # Convertin y_pred to probabilities
         prob = [self.prob_fn(i, y_pred) for i in y_pred]
         print("Prob", prob)
-        loss = sum(self.loss_fn(ys, y_pred), Value(0))
+        loss = sum(self.loss_fn(ys, y_pred), Tensor(0))
         loss.backprop()
         return loss.data
 

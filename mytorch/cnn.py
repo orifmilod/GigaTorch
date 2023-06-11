@@ -5,7 +5,7 @@ from mytorch.loss import binary_cross_entropy_loss, softmax
 from mytorch.nn import MLP
 from mytorch.utils import one_hot
 from mytorch.weight_init import WightInitializer
-from .engine import Value
+from mytorch.tensor import Tensor
 from PIL import Image
 import numpy as np
 from abc import ABC, abstractmethod
@@ -15,16 +15,18 @@ from os.path import join
 
 class Compute(ABC):
     @abstractmethod
-    def compute(self, data) -> List[List[Value]]:
+    def compute(self, data) -> List[List[Tensor]]:
         pass
-
 
 class MaxPool2D(Compute):
     def __init__(self, kernel_size, stride = None):
         self.kernel_size = kernel_size
         self.stride = stride if stride is not None else kernel_size
 
-    def compute(self, data_list) -> List[List[Value]]:
+    def compute(self, data_list) -> List[List[Tensor]]:
+        print("Computing maxpool")
+        print("Size of data", len(data_list[0]))
+        print("Number of input", len(data_list))
         output = []
         for data in data_list:
             if len(data) < self.kernel_size or len(data[0]) < self.kernel_size:
@@ -34,7 +36,7 @@ class MaxPool2D(Compute):
             for row_index in range(0, len(data) - self.kernel_size + 1, self.stride):
                 row = []
                 for column_index in range(0, len(data[row_index]) - self.kernel_size + 1, self.stride):
-                    current_max = Value(0)
+                    current_max = Tensor(0)
                     for i in range(self.kernel_size):
                         for j in range(self.kernel_size):
                             current_max = max(
@@ -43,6 +45,9 @@ class MaxPool2D(Compute):
                     row.append(current_max)
                 new_data.append(row)
             output.append(new_data)
+        print("Size of data", len(output[0]))
+        print("Number of output", len(output))
+        print("\n")
         return output
 
 
@@ -53,37 +58,56 @@ class Conv2D(Compute):
     out_channels: int
     kernel_size: int | tuple
     activation_fn: An activation function to apply after computing
+    stride: int
     """
 
     def __init__(self, in_channels, out_channels, kernel_size, activation_fn, stride=1):
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.kernels = [
-            WightInitializer().xavier_uniform(in_channels, out_channels, kernel_size, kernel_size)
+        # In a Conv2D layer, the number of filters corresponds to the number of output channels. 
+        # if the input_channel is 3 and the output_channel is 5, then there would be 5 filters in the Conv2D layer. 
+        # Each filter will have a depth of 3 (matching the input_channel), and the spatial dimensions of 
+        # the filters will be determined by the kernel size specified in the Conv2D layer.
+        self.kernels = Tensor([
+            [
+                WightInitializer().xavier_uniform(in_channels, out_channels, kernel_size, kernel_size)
+                for _ in range(in_channels)
+            ]
             for _ in range(out_channels)
-        ]
+        ])
 
         self.kernel_size = kernel_size
         self.activation_fn = activation_fn
         self.stride = stride
 
-    def compute(self, data) -> List[List[Value]]:
-        if len(data) < self.kernel_size or len(data[0]) < self.kernel_size:
-            raise Exception("Received data is smaller than the kernel_size")
+        print("Conv2D with", in_channels, out_channels, kernel_size, "has", self.kernels.shape)
 
+    def compute(self, data_list):
+        print("computing conv2d")
+        print("Size of data", len(data_list[0]))
+        print("Number of input", len(data_list))
         output = []
+        print("Number of kernels", len(self.kernels))
         for kernel in self.kernels:
-            new_data = []
-            for row_index in range(0, len(data) - self.kernel_size + 1, self.stride):
-                row = []
-                for column_index in range(len(data[0]) - self.kernel_size + 1):
-                    sum = Value(0)
-                    for i in range(self.kernel_size):
-                        for j in range(self.kernel_size):
-                            sum += data[row_index + i][column_index + j] * kernel[i][j]
-                    row.append(self.activation_fn(sum))
-                new_data.append(row)
-            output.append(new_data)
+            output.append([])
+            for data in data_list:
+                if len(data) < self.kernel_size or len(data[0]) < self.kernel_size:
+                    raise Exception("Received data is smaller than the kernel_size")
+
+                new_data = []
+                for row_index in range(0, len(data) - self.kernel_size + 1, self.stride):
+                    row = []
+                    for column_index in range(len(data[0]) - self.kernel_size + 1):
+                        sum = Tensor(0)
+                        for i in range(self.kernel_size):
+                            for j in range(self.kernel_size):
+                                sum += data[row_index + i][column_index + j] * kernel[i][j]
+                        row.append(self.activation_fn(sum))
+                    new_data.append(row)
+                output[1].append(new_data)
+        print("Size of data", len(output[0]))
+        print("Number of output", len(output))
+        print("\n")
         return output
 
 class CNN:
@@ -99,43 +123,15 @@ class CNN:
         self._setup_feature_extraction_layers()
         # TODO: Any better way of computing the input layer?
         # What happens when the input image are of different dimensions
-        data_size = 28 # TODO: get rid of this workaround
+        input_size = 28
         for layer in self.features_extraction_layers:
-           data_size = int(((data_size - layer.kernel_size - 2) / layer.stride + 1))
+            input_size = (input_size - layer.kernel_size + 1) / layer.stride
 
         # For calculating loss we will use the following:
         # loss = L(y, f(s)); where L is the loss function, f is the softmax and s is the output from NN
-        print("NN input layer", data_size)
-        self.nn = MLP(data_size, [16, 16, 10], binary_cross_entropy_loss, softmax)
+        print("NN input layer", input_size)
 
-    def _load_data(self, data_dir, categories):
-        data = {}  # {'catergory_name': [datas]}
-        for category in categories:
-            # Finding all the images under the given dir
-            images_path = f"{data_dir}/{category}/"
-            images_list = [join(images_path, f) for f in listdir(images_path)]
-            # print(f"Number of Images in path {images_path}:", len(images_list))
-
-            # Converting all the images to Value type
-            for img_path in images_list:
-                img_array = np.array(Image.open(img_path))
-                converted_image = []
-
-                for row_index in range(img_array.shape[0]):
-                    row = []
-                    for column_index in range(img_array.shape[1]):
-                        row.append(Value(img_array[row_index][column_index]))
-                    converted_image.append(row)
-
-                if category not in data:
-                    data[category] = []
-
-                data[category].append(converted_image)
-
-        for key in data:
-            print(f"Loaded data for category '{key}':", len(data[key]))
-
-        return data
+        self.nn = MLP(5 * 5 * 64, [128, 10], binary_cross_entropy_loss, softmax)
 
     """
     Feature extraction layer consist of:
@@ -150,6 +146,35 @@ class CNN:
             MaxPool2D(2),
         ]
 
+    def _load_data(self, data_dir, categories):
+        data = {}  # {'catergory_name': [datas]}
+        for category in categories:
+            # Finding all the images under the given dir
+            images_path = f"{data_dir}/{category}/"
+            images_list = [join(images_path, f) for f in listdir(images_path)]
+            # print(f"Number of Images in path {images_path}:", len(images_list))
+
+            # Converting all the images to Tensor type
+            for img_path in images_list:
+                img_array = np.array(Image.open(img_path))
+                converted_image = []
+
+                for row_index in range(img_array.shape[0]):
+                    row = []
+                    for column_index in range(img_array.shape[1]):
+                        row.append(Tensor(img_array[row_index][column_index]))
+                    converted_image.append(row)
+
+                if category not in data:
+                    data[category] = []
+
+                data[category].append(converted_image)
+
+        for key in data:
+            print(f"Loaded data for category '{key}':", len(data[key]))
+
+        return data
+
     """
     Extracts features from the image
     """
@@ -160,15 +185,15 @@ class CNN:
         return data
 
     def _flatten(self, matrix):
-        return reduce(lambda x,y :x+y , matrix)
+        return reduce(lambda x, y :x+y, matrix)
 
     def train(self):
         # Extract features
         for category in self.training_data:
             for image in self.training_data[category][:2]:
-                features = self._extract_features(image)
-                features = self._flatten(image)
-                print("Features", features, len(features))
+                features = self._extract_features([image])
+                features = self._flatten(features)
+                print("Features", len(features))
                 # Feed the features to Fully connctec NN
                 predictions = self.nn(features)
                 print("pred", predictions)

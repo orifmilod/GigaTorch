@@ -1,14 +1,15 @@
 from mytorch.loss import squared_loss
 from mytorch.nn import Neuron, Layer, MLP
-from mytorch.engine import Value
-from torch import Tensor, allclose, nn
+from mytorch.tensor import Tensor
+from torch import allclose, nn
+import torch
 
 
 def test_neuron():
     number_of_inputs = 3
     neuron = Neuron(number_of_inputs)
-    neuron.weights = [Value(1), Value(0.5), Value(-1)]
-    neuron.bias = Value(-3)
+    neuron.weights = Tensor([1, 0.5, -1])
+    neuron.bias = Tensor(-3)
 
     x = [2, -1.5, -2.5]
     output = neuron(x)  # (1*2) + (0.5*-1.5) +(-2.5 *-1) + (-3) = 0.75 -> tanh(0.75)
@@ -29,8 +30,8 @@ def test_layer():
     neuron_biases = [-3, 2]
 
     for i in range(neurons_per_layer):
-        layer.neurons[i].weights = neuron_weights[i]  # todo: convert to Value type
-        layer.neurons[i].bias = Value(neuron_biases[i])
+        layer.neurons[i].weights = neuron_weights[i]  # todo: convert to Tensor type
+        layer.neurons[i].bias = Tensor(neuron_biases[i])
 
     x = [2, -1.5, -2.5]
     outputs = layer(x)
@@ -61,7 +62,7 @@ def test_mlp_forward_pass():
     for i in range(len(neurons_per_layer)):
         for j in range(neurons_per_layer[i]):
             mlp.layers[i].neurons[j].weights = neuron_weigths[i][j]
-            mlp.layers[i].neurons[j].bias = Value(neuron_biases[i][j])
+            mlp.layers[i].neurons[j].bias = Tensor(neuron_biases[i][j])
 
     x = [2, -1.5, -2.5]
     output = mlp(x)
@@ -74,11 +75,11 @@ def test_mlp_forward_pass():
     )
 
     # Setting the weights and biases in PyTorch
-    model[0].weight = nn.Parameter(Tensor(neuron_weigths[0]))
-    model[0].bias = nn.Parameter(Tensor(neuron_biases[0]))
+    model[0].weight = nn.Parameter(torch.Tensor(neuron_weigths[0]))
+    model[0].bias = nn.Parameter(torch.Tensor(neuron_biases[0]))
 
-    model[2].weight = nn.Parameter(Tensor(neuron_weigths[1]))
-    model[2].bias = nn.Parameter(Tensor(neuron_biases[1]))
+    model[2].weight = nn.Parameter(torch.Tensor(neuron_weigths[1]))
+    model[2].bias = nn.Parameter(torch.Tensor(neuron_biases[1]))
 
     expected = model(Tensor(x))
 
@@ -106,7 +107,7 @@ def test_mlp_with_loss_function():
     for i in range(len(neurons_per_layer)):
         for j in range(neurons_per_layer[i]):
             mlp.layers[i].neurons[j].weights = neuron_weigths[i][j]
-            mlp.layers[i].neurons[j].bias = Value(neuron_biases[i][j])
+            mlp.layers[i].neurons[j].bias = Tensor(neuron_biases[i][j])
 
     x = [2, -1.5, -2.5]
     output = mlp(x)
@@ -133,14 +134,14 @@ def test_mlp_backward_pass():
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
         for j in range(neurons_per_layer[i]):
-            mlp.layers[i].neurons[j].weights = [Value(w) for w in neuron_weigths[i][j]]
-            mlp.layers[i].neurons[j].bias = Value(neuron_biases[i][j])
+            mlp.layers[i].neurons[j].weights = [Tensor(w) for w in neuron_weigths[i][j]]
+            mlp.layers[i].neurons[j].bias = Tensor(neuron_biases[i][j])
 
     x = [2, -1.5, -2.5]
     x_target = [1]
 
-    my_output = mlp([Value(a) for a in x])[0]
-    my_loss = mlp.calc_loss([Value(a) for a in x_target], [my_output])
+    my_output = mlp([Tensor(a) for a in x])[0]
+    my_loss = mlp.calc_loss([Tensor(a) for a in x_target], [my_output])
 
     # PyTorch
     model = nn.Sequential(
@@ -153,14 +154,14 @@ def test_mlp_backward_pass():
     )
 
     # Setting the weights and biases in PyTorch
-    model[0].weight = nn.Parameter(Tensor(neuron_weigths[0]))
-    model[0].bias = nn.Parameter(Tensor(neuron_biases[0]))
+    model[0].weight = nn.Parameter(torch.Tensor(neuron_weigths[0]))
+    model[0].bias = nn.Parameter(torch.Tensor(neuron_biases[0]))
 
-    model[2].weight = nn.Parameter(Tensor(neuron_weigths[1]))
-    model[2].bias = nn.Parameter(Tensor(neuron_biases[1]))
+    model[2].weight = nn.Parameter(torch.Tensor(neuron_weigths[1]))
+    model[2].bias = nn.Parameter(torch.Tensor(neuron_biases[1]))
 
-    model[4].weight = nn.Parameter(Tensor(neuron_weigths[2]))
-    model[4].bias = nn.Parameter(Tensor(neuron_biases[2]))
+    model[4].weight = nn.Parameter(torch.Tensor(neuron_weigths[2]))
+    model[4].bias = nn.Parameter(torch.Tensor(neuron_biases[2]))
 
     py_output = model(Tensor(x))
     mse_loss = nn.MSELoss()

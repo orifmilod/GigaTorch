@@ -1,4 +1,4 @@
-from mytorch.weight_init import WightInitializer
+from gigatorch.weight_init import WightInitializer
 from math import sqrt
 
 

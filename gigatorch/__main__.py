@@ -1,6 +1,6 @@
-from mytorch.loss import softmax, squared_loss
+from gigatorch.loss import softmax, squared_loss
 from .nn import MLP
-from mytorch.tensor import Tensor
+from gigatorch.tensor import Tensor
 from .cnn import CNN
 
 

@@ -1,19 +1,19 @@
 import math
 from functools import total_ordering
 import numpy as np
+from torch import index_add
 
 
 @total_ordering
 class Tensor:
     """stores a single scalar value and its gradient"""
 
-    def __init__(self, data, _parents=[], _op="", label=""):
-        self.data = np.array(data)
+    def __init__(self, data, _parents=[], _op=""):
+        self.data = data.data if isinstance(data, Tensor) else np.array(data)
         self.grad = 0.0
         self._backprop = lambda: None
         self._parents = _parents
         self._op = _op
-        self.label = label
 
     def __repr__(self):
         return f"d:{self.data}"
@@ -59,6 +59,9 @@ class Tensor:
     def __float__(self):
         return float(self.data)
 
+    def to(self, new_type):
+        return Tensor(self.data.astype(new_type))
+
     def __pow__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
         output = Tensor(self.data**other.data, [self], f"**{other.data}")
@@ -102,11 +105,10 @@ class Tensor:
         return self.data > (other.data if isinstance(other, Tensor) else other)
 
     def __getitem__(self, indices):
-        data = self.data[indices]
-        return Tensor(data)
+        return Tensor(self.data[indices])
 
     def __setitem__(self, indices, value):
-        self.data[indices] = value
+        self.data[indices] = value.data if isinstance(value, Tensor) else value
 
     def item(self):
         return self.data
@@ -114,6 +116,9 @@ class Tensor:
     @property
     def shape(self):
         return self.data.shape
+
+    def __len__(self):
+        return self.data.shape[0]
 
     def reshape(self, *shape):
         data = self.data.reshape(*shape)
@@ -129,6 +134,11 @@ class Tensor:
 
     def mean(self, axis=None, keepdims=False):
         data = self.data.mean(axis=axis, keepdims=keepdims)
+        return Tensor(data)
+
+    @staticmethod
+    def zeros(*size, **kwargs):
+        data = np.zeros(*size, **kwargs)
         return Tensor(data)
 
     @staticmethod
@@ -156,6 +166,9 @@ class Tensor:
         )
         for node in reversed(topo):
             node._backprop()
+
+    def append(self, *args):
+        self.data = np.append(self.data, *args)
 
     def tanh(self):
         # other = other if isinstance(other, Tensor) else Tensor(other)

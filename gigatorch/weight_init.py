@@ -1,5 +1,5 @@
 from random import uniform
-from mytorch.tensor import Tensor
+from gigatorch.tensor import Tensor
 from math import sqrt
 
 

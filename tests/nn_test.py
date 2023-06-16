@@ -1,6 +1,6 @@
-from mytorch.loss import squared_loss
-from mytorch.nn import Neuron, Layer, MLP
-from mytorch.tensor import Tensor
+from gigatorch.loss import squared_loss
+from gigatorch.nn import Neuron, Layer, MLP
+from gigatorch.tensor import Tensor
 from torch import allclose, nn
 import torch
 

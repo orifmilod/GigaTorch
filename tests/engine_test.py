@@ -1,4 +1,4 @@
-from mytorch.tensor import Tensor
+from gigatorch.tensor import Tensor
 
 import torch
 

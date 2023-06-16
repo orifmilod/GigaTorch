@@ -1,17 +1,19 @@
 import random
 from typing import List
-from mytorch.tensor import Tensor
+from gigatorch.tensor import Tensor
+
 
 class Neuron:
     def __init__(self, number_of_input, nonlin=True) -> None:
-        self.weights = [
-            Tensor(random.uniform(-1, 1)) for _ in range(number_of_input)
-        ]
+        self.weights = [Tensor(random.uniform(-1, 1)) for _ in range(number_of_input)]
         self.bias = Tensor(random.uniform(-1, 1))
         self.nonlin = nonlin
 
     def __call__(self, x):
-        total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0)) + self.bias
+        total = (
+            sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0))
+            + self.bias
+        )
         return total.tanh()
 
     def __repr__(self):
@@ -40,6 +42,7 @@ class Layer:
 
 class MLP:
     """Multi Layered Perceptron"""
+
     def __init__(self, number_of_inputs, nuerons_per_layers, loss_fn, prob_fn) -> None:
         layers = [number_of_inputs] + nuerons_per_layers
         self.layers = [

@@ -1,7 +1,6 @@
 import math
 from functools import total_ordering
 import numpy as np
-from torch import index_add
 
 
 @total_ordering
@@ -18,8 +17,79 @@ class Tensor:
     def __repr__(self):
         return f"d:{self.data}"
 
+
+    def item(self):
+        return self.data
+
+    def backprop(self):
+        # Used for calculating gradient of the nodes in order
+        def _build_topological_sort(node, topo=[], visited=set()):
+            if node not in visited:
+                visited.add(node)
+                for parent in node._parents:
+                    _build_topological_sort(parent, topo, visited)
+
+                topo.append(node)
+
+            return topo
+
+        topo = _build_topological_sort(self)
+
+        # Propagate the gradient backprops
+        self.grad = (
+            1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
+        )
+        for node in reversed(topo):
+            node._backprop()
+
+    def append(self, *args):
+        self.data = np.append(self.data, *args)
+
+    @property
+    def shape(self):
+        return self.data.shape
+
+    def reshape(self, *shape):
+        data = self.data.reshape(*shape)
+        return Tensor(data)
+
+    def transpose(self, *axes):
+        data = self.data.transpose(*axes)
+        return Tensor(data)
+
+    def sum(self, axis=None, keepdims=False):
+        data = self.data.sum(axis=axis, keepdims=keepdims)
+        return Tensor(data)
+
+    def mean(self, axis=None, keepdims=False):
+        data = self.data.mean(axis=axis, keepdims=keepdims)
+        return Tensor(data)
+
+    @staticmethod
+    def zeros(*size, **kwargs):
+        data = np.zeros(*size, **kwargs)
+        return Tensor(data)
+
+    @staticmethod
+    def randn(*size):
+        data = np.random.randn(*size)
+        return Tensor(data)
+
+    def tanh(self):
+        x = self.data
+        t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
+        output = Tensor(t, [self])
+
+        # Backpropagation for tanh operation
+        def _backprop():
+            self.grad += (
+                1 - t**2
+            ) * output.grad  # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+
+        output._backprop = _backprop
+        return output
     def relu(self):
-        out = Tensor(max(self.data, 0), [self], "ReLU")
+        out = Tensor(np.maximum(self.data, 0), [self])
 
         def _backprop():
             self.grad += (out.data > 0) * out.grad
@@ -28,9 +98,12 @@ class Tensor:
 
         return out
 
+    def to(self, new_type):
+        return Tensor(self.data.astype(new_type))
+
     def __add__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        output = Tensor(self.data + other.data, [self, other], "+")
+        output = Tensor(self.data + other.data, [self, other])
 
         # Backward propagation for addition operation
         def _backprop():
@@ -44,7 +117,7 @@ class Tensor:
 
     def __mul__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        output = Tensor(self.data * other.data, [self, other], "*")
+        output = Tensor(self.data * other.data, [self, other])
 
         # Backward propagation for multiplication operation
         def _backprop():
@@ -59,12 +132,9 @@ class Tensor:
     def __float__(self):
         return float(self.data)
 
-    def to(self, new_type):
-        return Tensor(self.data.astype(new_type))
-
     def __pow__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        output = Tensor(self.data**other.data, [self], f"**{other.data}")
+        output = Tensor(self.data**other.data, [self])
 
         def _backprop():
             self.grad += (
@@ -110,77 +180,6 @@ class Tensor:
     def __setitem__(self, indices, value):
         self.data[indices] = value.data if isinstance(value, Tensor) else value
 
-    def item(self):
-        return self.data
-
-    @property
-    def shape(self):
-        return self.data.shape
-
     def __len__(self):
         return self.data.shape[0]
 
-    def reshape(self, *shape):
-        data = self.data.reshape(*shape)
-        return Tensor(data)
-
-    def transpose(self, *axes):
-        data = self.data.transpose(*axes)
-        return Tensor(data)
-
-    def sum(self, axis=None, keepdims=False):
-        data = self.data.sum(axis=axis, keepdims=keepdims)
-        return Tensor(data)
-
-    def mean(self, axis=None, keepdims=False):
-        data = self.data.mean(axis=axis, keepdims=keepdims)
-        return Tensor(data)
-
-    @staticmethod
-    def zeros(*size, **kwargs):
-        data = np.zeros(*size, **kwargs)
-        return Tensor(data)
-
-    @staticmethod
-    def randn(*size):
-        data = np.random.randn(*size)
-        return Tensor(data)
-
-    def backprop(self):
-        # Used for calculating gradient of the nodes in order
-        def _build_topological_sort(node, topo=[], visited=set()):
-            if node not in visited:
-                visited.add(node)
-                for parent in node._parents:
-                    _build_topological_sort(parent, topo, visited)
-
-                topo.append(node)
-
-            return topo
-
-        topo = _build_topological_sort(self)
-
-        # Propagate the gradient backprops
-        self.grad = (
-            1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
-        )
-        for node in reversed(topo):
-            node._backprop()
-
-    def append(self, *args):
-        self.data = np.append(self.data, *args)
-
-    def tanh(self):
-        # other = other if isinstance(other, Tensor) else Tensor(other)
-        x = self.data
-        t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-        output = Tensor(t, [self], "tanh")
-
-        # Backpropagation for tanh operation
-        def _backprop():
-            self.grad += (
-                1 - t**2
-            ) * output.grad  # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
-
-        output._backprop = _backprop
-        return output

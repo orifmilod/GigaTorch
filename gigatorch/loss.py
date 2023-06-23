@@ -1,21 +1,15 @@
-from math import log, e
-
 from gigatorch.tensor import Tensor
+import numpy as np
 
 
 def squared_loss(ys, y_pred):
     return sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
 
+def cross_entropy_loss(ys: Tensor, y_pred: Tensor):
+    epsilon = 1e-10  # small value to avoid taking log by zero
+    ys = Tensor(np.clip(ys.item(), epsilon, 1.0-epsilon))
+    return -(y_pred * ys.log()).sum()
 
-def binary_cross_entropy_loss(ys, ys_pred):
-    return [
-        -log(y_pred) if y == 1 else -log(1 - y_pred) for y, y_pred in zip(ys, ys_pred)
-    ]
-
-
-def softmax(numerator, vector):
-    denominator = Tensor(0)
-    temp_e = Tensor(e)
-    for i in vector:
-        denominator += temp_e**i
-    return temp_e**numerator / denominator
+def softmax(logits):
+    count = logits.exp()
+    return count / count.sum()

@@ -10,6 +10,9 @@ def cross_entropy_loss(ys: Tensor, y_pred: Tensor):
     ys = Tensor(np.clip(ys.item(), epsilon, 1.0-epsilon))
     return -(y_pred * ys.log()).sum()
 
-def softmax(logits):
+def softmax(logits: Tensor) -> Tensor:
+    # Subtracting the logis by it's max to avoid having 'inf' when 
+    # taking large numbers in power
+    logits -= logits.max()
     count = logits.exp()
     return count / count.sum()

@@ -17,8 +17,7 @@ class Tensor:
     def __repr__(self):
         return f"d:{self.data}"
 
-
-    def item(self):
+    def item(self) -> np.ndarray:
         return self.data
 
     def backprop(self):
@@ -49,6 +48,10 @@ class Tensor:
     def shape(self):
         return self.data.shape
 
+    @property
+    def dtype(self):
+        return self.data.dtype
+
     def reshape(self, *shape):
         data = self.data.reshape(*shape)
         return Tensor(data)
@@ -64,6 +67,15 @@ class Tensor:
     def mean(self, axis=None, keepdims=False):
         data = self.data.mean(axis=axis, keepdims=keepdims)
         return Tensor(data)
+
+    def exp(self):
+        return Tensor(np.exp(self.data))
+
+    def log(self):
+        return Tensor(np.log(self.data))
+
+    def max(self):
+        return Tensor(self.data.max())
 
     @staticmethod
     def zeros(*size, **kwargs):
@@ -88,6 +100,7 @@ class Tensor:
 
         output._backprop = _backprop
         return output
+
     def relu(self):
         out = Tensor(np.maximum(self.data, 0), [self])
 
@@ -182,4 +195,3 @@ class Tensor:
 
     def __len__(self):
         return self.data.shape[0]
-

@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import List
 from gigatorch.activation_fn import relu
-from gigatorch.loss import binary_cross_entropy_loss, softmax
+from gigatorch.loss import cross_entropy_loss, softmax
 from gigatorch.nn import MLP
 from gigatorch.utils import one_hot
 from gigatorch.weight_init import WightInitializer
@@ -100,8 +100,8 @@ class Conv2D(Compute):
                 print("layer index", layer_index)
                 data = data_list[layer_index]
                 kernel = self.kernels[layer_index]
-                print('data', data.shape)
-                print('kernel', kernel.shape)
+                print("data", data.shape)
+                print("kernel", kernel.shape)
 
                 if data.shape[0] < self.kernel_size or data.shape[1] < self.kernel_size:
                     raise Exception("Received data is smaller than the kernel_size")
@@ -143,13 +143,13 @@ class CNN:
         # What happens when the input image are of different dimensions
         # input_size = 28
         # for layer in self.features_extraction_layers:
-            # input_size = (input_size - layer.kernel_size + 1) / layer.stride
+        # input_size = (input_size - layer.kernel_size + 1) / layer.stride
 
         # For calculating loss we will use the following:
         # loss = L(y, f(s)); where L is the loss function, f is the softmax and s is the output from NN
         # print("NN input layer", input_size)
 
-        self.nn = MLP(5 * 5 * 64, [128, 10], binary_cross_entropy_loss, softmax)
+        self.nn = MLP(5 * 5 * 64, [128, 10], cross_entropy_loss, softmax)
 
     """
     Feature extraction layer consist of:

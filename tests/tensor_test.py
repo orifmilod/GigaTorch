@@ -138,6 +138,7 @@ def test_sub_operation():
     a -= Tensor(0.5)
     assert a.data == 0.5
 
+
 def test_relu():
-    a = Tensor([1,3, -1, 0, -100])
-    assert all(a.relu() == Tensor([1,3,0,0,0]))
+    a = Tensor([1, 3, -1, 0, -100])
+    assert all(a.relu() == Tensor([1, 3, 0, 0, 0]))

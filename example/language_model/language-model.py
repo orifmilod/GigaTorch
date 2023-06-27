@@ -75,8 +75,10 @@ def main():
         logits = h @ w2 + b2
 
         loss = F.cross_entropy(logits, label[minibatch_indexes])
-        loss.backward()
+        for p in parameters:
+            p.grad = None
 
+        loss.backward()
         print(loss.item())
         used_lrs.append(i)
         losses.append(loss.item())

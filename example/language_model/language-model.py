@@ -7,7 +7,7 @@ CONTEXT_SIZE = 3
 # Size of the vector to represent a single token
 EMBEDDING_SIZE = 10
 MINIBATCH_SIZE = 32
-EPOCHS = 10000
+EPOCHS = 100000
 
 def generate_mapping(data):
     chars = sorted(list(set(''.join(data))))
@@ -46,15 +46,12 @@ def main():
 
     # Creating hidden layer
     number_of_nuerons = 200
-    w1 = torch.rand((CONTEXT_SIZE * EMBEDDING_SIZE, number_of_nuerons))
-    b1 = torch.rand(number_of_nuerons)
+    w1 = torch.rand((CONTEXT_SIZE * EMBEDDING_SIZE, number_of_nuerons)) * 0.01
+    b1 = torch.rand(number_of_nuerons) * 0
 
     # Creating the output layer
-    w2 = torch.rand((number_of_nuerons, 27))
-    b2 = torch.rand(27)
-
-    # Calculate the loss by calculating log mean of the correct labels; ideally they are all 1, meaning that we are correctly predicting the label
-    # loss = -probability[torch.arange(embedding.shape[0]), label].log().mean()
+    w2 = torch.rand((number_of_nuerons, 27)) * 0.01
+    b2 = torch.rand(27) * 0
 
     parameters = [C, w1, b1, w2, b2]
     print("Number of parameters:", sum(p.nelement() for p in parameters))
@@ -64,6 +61,7 @@ def main():
 
     used_lrs = []
     losses = []
+    avgs = []
 
     for i in range(EPOCHS):
         # Minibatching 
@@ -79,15 +77,22 @@ def main():
             p.grad = None
 
         loss.backward()
-        print(loss.item())
+
+        # track stats
+        if i % 1000 == 0: # print every once in a while
+          print(f'{i:7d}/{EPOCHS:7d}: {loss.item():.4f}')
+          if i > EPOCHS / 2:
+              avgs.append(loss.item())
+
         used_lrs.append(i)
         losses.append(loss.item())
 
-        lr = 0.01 if i < EPOCHS / 2 else 0.001
+        lr = 0.1 if i < EPOCHS / 2 else 0.01 # step learning rate decay
         for p in parameters:
             p.data -= lr * p.grad
 
 
+    print("Average loss", sum(avgs) / len(avgs))
     plt.plot(used_lrs, losses)
     plt.legend()
     plt.show()

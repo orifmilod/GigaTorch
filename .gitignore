@@ -3,3 +3,6 @@ __pycache__/
 dist/
 output*
 .DS_Store
+env/
+build/
+.eggs/

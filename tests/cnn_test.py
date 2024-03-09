@@ -26,12 +26,7 @@ def test_conv2d_success():
 
     output = conv2d.compute(sample_data)
     print("FINAL OUTPUT", output.item())
-    expected = [
-        [ # for layer 1
-            [10, 10],
-            [10, 10]
-        ]
-    ]
+    expected = [[[10, 10], [10, 10]]]  # for layer 1
 
     assert all(output.item() == expected)
 

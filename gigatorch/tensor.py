@@ -108,7 +108,6 @@ class Tensor:
             self.grad += (out.data > 0) * out.grad
 
         out._backprop = _backprop
-
         return out
 
     def to(self, new_type):

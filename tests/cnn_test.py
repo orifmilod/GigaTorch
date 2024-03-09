@@ -25,14 +25,15 @@ def test_conv2d_success():
     )
 
     output = conv2d.compute(sample_data)
-    print(output)
-    # Output size is (m-n+1)
-    assert len(output[0][0]) == len(sample_data[0]) - len(conv2d.kernels[0][0]) + 1
-    assert len(output[0][0]) == len(sample_data[0][0]) - len(conv2d.kernels[0][0]) + 1
+    print("FINAL OUTPUT", output.item())
+    expected = [
+        [ # for layer 1
+            [10, 10],
+            [10, 10]
+        ]
+    ]
 
-    expected = [[[10, 10], [10, 10]]]
-
-    assert output == expected
+    assert all(output.item() == expected)
 
 
 def test_conv2d_kernel_size_larger_than_input():

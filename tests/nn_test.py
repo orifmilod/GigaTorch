@@ -1,4 +1,4 @@
-from gigatorch.loss import squared_loss
+from gigatorch.loss import squared_loss, softmax
 from gigatorch.nn import Neuron, Layer, MLP
 from gigatorch.tensor import Tensor
 from torch import allclose, nn
@@ -56,7 +56,7 @@ def test_mlp_forward_pass():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss, softmax)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
@@ -101,7 +101,7 @@ def test_mlp_with_loss_function():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss, softmax)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):
@@ -129,7 +129,7 @@ def test_mlp_backward_pass():
     ]
     neuron_biases = [[-3, 2], [1, -2, -1], [1]]
 
-    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss)
+    mlp = MLP(number_of_inputs, neurons_per_layer, squared_loss, softmax)
 
     # Setting the weights and biases in my NN
     for i in range(len(neurons_per_layer)):

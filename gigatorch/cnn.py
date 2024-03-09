@@ -25,8 +25,8 @@ class MaxPool2D(Compute):
 
     def compute(self, data_list) -> List[List[Tensor]]:
         print("Computing maxpool")
-        print("Size of data", len(data_list[0]))
-        print("Number of input", len(data_list))
+        print("Size of data", data_list.shape[0])
+        print("Number of input", data_list.shape[0])
         output = []
         for data in data_list:
             if len(data) < self.kernel_size or len(data[0]) < self.kernel_size:
@@ -47,8 +47,8 @@ class MaxPool2D(Compute):
                     row.append(current_max)
                 new_data.append(row)
             output.append(new_data)
-        print("Size of data", len(output[0]))
-        print("Number of output", len(output))
+        print("Size of data", output.shape[0])
+        print("Number of output", output.shape[0])
         print("\n")
         return output
 
@@ -89,15 +89,11 @@ class Conv2D(Compute):
         self.stride = stride
 
     def compute(self, data_list):
-        print("computing conv2d")
-        print("Size of data", data_list.shape)
         output = Tensor([])
-        print("Number of kernels", self.kernels.shape)
         # Iterate for out_channels number of times
         for i in range(self.kernels.shape[0]):
-            print("output", i)
+            new_layer = []
             for layer_index in range(data_list.shape[0]):
-                print("layer index", layer_index)
                 data = data_list[layer_index]
                 kernel = self.kernels[layer_index]
                 print("data", data.shape)
@@ -111,20 +107,23 @@ class Conv2D(Compute):
                     0, len(data) - self.kernel_size + 1, self.stride
                 ):
                     row = []
-                    for column_index in range(len(data[0]) - self.kernel_size + 1):
-                        sum = Tensor(0)
+                    for column_index in range(data.shape[0] - self.kernel_size + 1):
+                        sum = 0
                         for i in range(self.kernel_size):
                             for j in range(self.kernel_size):
                                 sum += (
                                     data[row_index + i][column_index + j] * kernel[i][j]
                                 )
-                        row.append(self.activation_fn(sum))
+                        a = self.activation_fn(sum.item())
+                        print("item", a, type(a))
+                        row.append(a)
+                    print("Adding new row", row)
                     new_data.append(row)
-                output.append(new_data)
+                new_layer.append(new_data)
+                print("Finishing the layer", new_layer)
+            output.append(new_layer)
 
-        print("Size of data", len(output[0]))
-        print("Number of output", len(output))
-        print("\n")
+        print("Outputshape", output.shape)
         return output
 
 

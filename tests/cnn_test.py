@@ -15,8 +15,8 @@ def test_conv2d_success():
         ]
     )
     sample_data = Tensor(
-        [
-            [  # input_channel 1
+        [ # Batch 1
+            [  # Channel 1
                 [1, 1, 1],
                 [1, 1, 1],
                 [1, 1, 1],
@@ -25,8 +25,7 @@ def test_conv2d_success():
     )
 
     output = conv2d.compute(sample_data)
-    print("FINAL OUTPUT", output.item())
-    expected = [[[10, 10], [10, 10]]]  # for layer 1
+    expected = Tensor([[[10, 10], [10, 10]]])  # for layer 1
 
     assert all(output.item() == expected)
 
@@ -54,42 +53,44 @@ def test_conv2d_kernel_size_larger_than_input():
 
 
 def test_maxpool2d_success():
-    maxpool2d = MaxPool2D(2, 1)
-    sample_data = Tensor(
-        [
+    maxpool2d = MaxPool2D(kernel_size=2, stride=1)
+    sample_data = Tensor([
+        [ # Batch 1
             [  # channel 1
                 [1, 2, 3, 4],
                 [5, 6, 7, -1],
                 [0, 2, 100, 9],
                 [0, 0, 0, 0],
             ]
-        ]
+        ]]
     )
 
-    expected = Tensor(
-        [
-            [
+    expected = Tensor([
+        [ # Batch 1
+            [ # Channel 1
                 [6, 7, 7],
                 [6, 100, 100],
                 [2, 100, 100],
             ]
         ]
-    )
+    ])
 
     output = maxpool2d.compute(sample_data)
-    print(output)
-    print(expected)
     assert (expected == output).all()
 
-    maxpool2d_with_default_stride = MaxPool2D(2)
+    maxpool2d_with_default_stride = MaxPool2D(kernel_size=2)
 
-    expected = [
-        [6, 7],
-        [2, 100],
-    ]
+    expected = Tensor([
+        [ # Batch 1
+            [ # Channel 1
+                [6, 7],
+                [2, 100]
+            ]
+        ]
+    ])
 
     output = maxpool2d_with_default_stride.compute(sample_data)
-    assert expected == output
+    assert (expected == output).all()
 
 
 def test_maxpool2d_kernel_size_larger_than_input():

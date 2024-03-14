@@ -97,7 +97,9 @@ class Conv2D(Compute):
         self.activation_fn = activation_fn
         self.stride = stride
 
-   def compute(self, input):
+    def compute(self, input):
+        assert len(input.shape) == 4, f"Can't Conv2D {input.shape}"
+
         (batch_size, _, height, width) = input.shape
         output_height = (height - self.kernel_size) // self.stride + 1
         output_width = (width - self.kernel_size) // self.stride + 1
@@ -112,7 +114,7 @@ class Conv2D(Compute):
                         w_start = j * self.stride
                         w_end = w_start + self.kernel_size
                         output[b, k, i, j] = self.activation_fn(
-                            np.sum(input[b, :, h_start:h_end, w_start:w_end] * self.kernels[k])
+                            np.sum((input[b, :, h_start:h_end, w_start:w_end] * self.kernels[k]).data)
                         )
 
         return output

@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
-# How much tokens to keep as context when making the prediction for the next one
+# Number of tokens to keep as context when making the prediction for the next one
 CONTEXT_SIZE = 3
 # Size of the vector to represent a single token
 EMBEDDING_SIZE = 10

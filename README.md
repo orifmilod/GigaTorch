@@ -35,8 +35,11 @@ The current recommended way to install GigaTorch is from source.
 ```sh
 git clone https://github.com/orifmilod/GigaTorch.git
 cd GigaTorch
-python3 -m pip install -e . # or `py3 -m pip install -e .` if you are on windows
-```
+# Make sure you have virtualenv installed
+python -m pip install virtualenv
+python -m venv env
+source ./env/bin/activate
+python install -r requirements.txt 
 
 #### Building the project
 ```

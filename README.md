@@ -40,7 +40,7 @@ python -m pip install virtualenv
 python -m venv env
 source ./env/bin/activate
 python install -r requirements.txt 
-
+```
 #### Building the project
 ```
 python setup.py build

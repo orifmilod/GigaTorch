@@ -81,7 +81,7 @@ def test_mlp_forward_pass():
     model[2].weight = nn.Parameter(torch.Tensor(neuron_weigths[1]))
     model[2].bias = nn.Parameter(torch.Tensor(neuron_biases[1]))
 
-    expected = model(Tensor(x))
+    expected = model(torch.Tensor(x))
 
     tol = 1e-6
     for i in range(len(x)):
@@ -121,7 +121,7 @@ def test_mlp_backward_pass():
     neuron_weigths = [
         [[-1, 4, -3], [1, 0.5, -1]],  # 1st layer  # -> tanh(-0.25)  # -> tanh(0.75)
         [  # 2nd layer
-            [0, 1],  # (tanh(-0.25) * 0) + (tanh(-0.75) * 1) -> tanh(tanh(-0.75))
+            [0, 1],   # (tanh(-0.25) * 0) + (tanh(-0.75) * 1) -> tanh(tanh(-0.75))
             [-1, 1],  # (tanh(-0.25) * -1) + (tanh(-0.75) * 1) -> tanh(0.39023028998)
             [-1, 0],  #
         ],
@@ -140,8 +140,8 @@ def test_mlp_backward_pass():
     x = [2, -1.5, -2.5]
     x_target = [1]
 
-    my_output = mlp([Tensor(a) for a in x])[0]
-    my_loss = mlp.calc_loss([Tensor(a) for a in x_target], [my_output])
+    result_output = mlp([Tensor(a) for a in x])[0]
+    result_loss = mlp.calc_loss([Tensor(a) for a in x_target], [result_output])
 
     # PyTorch
     model = nn.Sequential(
@@ -163,15 +163,15 @@ def test_mlp_backward_pass():
     model[4].weight = nn.Parameter(torch.Tensor(neuron_weigths[2]))
     model[4].bias = nn.Parameter(torch.Tensor(neuron_biases[2]))
 
-    py_output = model(Tensor(x))
+    expected_output = model(torch.Tensor(x))
     mse_loss = nn.MSELoss()
 
-    py_loss = mse_loss(py_output, Tensor(x_target))
-    py_loss.backward()
+    expected_loss = mse_loss(expected_output, torch.Tensor(x_target))
+    expected_loss.backward()
 
     tol = 1e-6
-    assert abs(py_loss.item() - my_loss) < tol
-    assert abs(py_output.item() - my_output.data) < tol
+    assert abs(expected_loss.item() - result_loss) < tol
+    assert abs(expected_output.item() - result_output.data) < tol
 
     for layer_index in range(len(neurons_per_layer)):
         py_layer = model[layer_index * 2].weight.grad

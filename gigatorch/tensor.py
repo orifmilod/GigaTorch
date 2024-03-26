@@ -7,8 +7,8 @@ import numpy as np
 class Tensor:
     """stores a single scalar value and its gradient"""
 
-    def __init__(self, data, _parents=[], _op=""):
-        self.data = data.data if isinstance(data, Tensor) else np.array(data)
+    def __init__(self, input, _parents=[], _op=""):
+        self.data = input.data if isinstance(input, Tensor) else np.array(input)
         self.grad = 0.0
         self._backprop = lambda: None
         self._parents = _parents

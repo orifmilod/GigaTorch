@@ -7,6 +7,7 @@ contourpy==1.2.0
 cycler==0.12.1
 debugpy==1.8.1
 decorator==5.1.1
+exceptiongroup==1.2.0
 executing==2.0.1
 filelock==3.13.1
 fonttools==4.49.0
@@ -47,6 +48,7 @@ setuptools-black==0.1.5
 six==1.16.0
 stack-data==0.6.3
 sympy==1.12
+tomli==2.0.1
 torch==2.2.1
 torchvision==0.17.1
 tornado==6.4

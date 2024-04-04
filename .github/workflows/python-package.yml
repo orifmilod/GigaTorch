@@ -11,10 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    container:
-      image: your-dockerhub-username/your-image-name:tag
     strategy:
       fail-fast: false
       matrix:

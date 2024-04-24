@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "gigatorch"
+version = "0.1.0"
+description = ""
+authors = ["Orif Milod <omilod@netflix.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^1.26.4"
+torch = "^2.3.0"
+pytest = "^8.1.1"
+pillow = "^10.3.0"
+torchvision = "^0.18.0"
+black = "^24.4.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py37']
+exclude = '''
+^/(
+  (
+     \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | tests
+  )/
+  | foo.py           # also separately exclude a file named foo.py in
+                     # the root of the project
+)
+'''

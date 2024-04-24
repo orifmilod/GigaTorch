@@ -15,12 +15,9 @@ class RNN:
     def __init__(self, input_size, nuerons_per_layers, loss_fn=np.tanh, prob_fn=softmax) -> None:
         layers = [input_size] + nuerons_per_layers
         num_of_layers = len(nuerons_per_layers)
-        self.layers = [
-            Layer(layers[i], layers[i + 1]) for i in range(num_of_layers)
-        ]
+        self.layers = [Layer(layers[i], layers[i + 1]) for i in range(num_of_layers)]
         # Add recurrent connection from output to input of the first layer
-        self.recurrent_weights = [
-            Tensor(random.uniform(-1, 1)) for _ in range(nuerons_per_layers[-1])]
+        self.recurrent_weights = [Tensor(random.uniform(-1, 1)) for _ in range(nuerons_per_layers[-1])]
 
         self.loss_fn = loss_fn
         self.prob_fn = prob_fn
@@ -30,8 +27,7 @@ class RNN:
 
         for i, layer in enumerate(self.layers):
             if i == 0:
-                input = [input[j] + hidden_state[j] * self.recurrent_weights[j]
-                         for j in range(len(input))]
+                input = [input[j] + hidden_state[j] * self.recurrent_weights[j] for j in range(len(input))]
             input = layer(input)
             hidden_state = input  # Output of current layer becomes the hidden_state for the next
 

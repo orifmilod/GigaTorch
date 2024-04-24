@@ -9,38 +9,42 @@ EMBEDDING_SIZE = 10
 MINIBATCH_SIZE = 32
 EPOCHS = 100000
 
+
 def generate_mapping(data):
-    chars = sorted(list(set(''.join(data))))
+    chars = sorted(list(set("".join(data))))
     stoi = {char: index + 1 for index, char in enumerate(chars)}
     # marks beginning or end of a word
-    stoi['.'] = 0
+    stoi["."] = 0
     return stoi
+
 
 def generate_learning_rates(size):
     lre = torch.linspace(-6, 0, size)
-    return 10 ** lre # we want the learning rates to be spaced exponentially
+    return 10**lre  # we want the learning rates to be spaced exponentially
+
 
 def load_data():
     data, label = [], []
-    words = open('./names.txt', 'r').read().splitlines()
+    words = open("./names.txt", "r").read().splitlines()
     stoi = generate_mapping(words)
     # itos = {v: k for k, v in stoi.items()}
 
     for w in words:
         context = [0] * CONTEXT_SIZE
-        for ch in w + '.':
-          ix = stoi[ch]
-          data.append(context)
-          label.append(ix)
-          context = context[1:] + [ix] # crop and append
+        for ch in w + ".":
+            ix = stoi[ch]
+            data.append(context)
+            label.append(ix)
+            context = context[1:] + [ix]  # crop and append
 
     data = torch.tensor(data)
     label = torch.tensor(label)
     return data, label
 
+
 def main():
     data, label = load_data()
-    # Creating an embedding from our data with each token being embedding represented 
+    # Creating an embedding from our data with each token being embedding represented
     # by a vector of length "EMBEDDING_SIZE"
     C = torch.rand((27, EMBEDDING_SIZE))
 
@@ -64,7 +68,7 @@ def main():
     avgs = []
 
     for i in range(EPOCHS):
-        # Minibatching 
+        # Minibatching
         minibatch_indexes = torch.randint(0, data.shape[0], (MINIBATCH_SIZE,))
         embedding = C[data[minibatch_indexes]]
 
@@ -79,23 +83,23 @@ def main():
         loss.backward()
 
         # track stats
-        if i % 1000 == 0: # print every once in a while
-          print(f'{i:7d}/{EPOCHS:7d}: {loss.item():.4f}')
-          if i > EPOCHS / 2:
-              avgs.append(loss.item())
+        if i % 1000 == 0:  # print every once in a while
+            print(f"{i:7d}/{EPOCHS:7d}: {loss.item():.4f}")
+            if i > EPOCHS / 2:
+                avgs.append(loss.item())
 
         used_lrs.append(i)
         losses.append(loss.item())
 
-        lr = 0.1 if i < EPOCHS / 2 else 0.01 # step learning rate decay
+        lr = 0.1 if i < EPOCHS / 2 else 0.01  # step learning rate decay
         for p in parameters:
             p.data -= lr * p.grad
-
 
     print("Average loss", sum(avgs) / len(avgs))
     plt.plot(used_lrs, losses)
     plt.legend()
     plt.show()
+
 
 if __name__ == "__main__":
     main()

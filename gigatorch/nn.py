@@ -9,10 +9,7 @@ class Neuron:
         self.nonlin = nonlin
 
     def __call__(self, x):
-        total = (
-            sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0))
-            + self.bias
-        )
+        total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0)) + self.bias
         return total.tanh()
 
     def __repr__(self):
@@ -44,9 +41,7 @@ class MLP:
 
     def __init__(self, number_of_inputs, nuerons_per_layers, loss_fn, prob_fn) -> None:
         layers = [number_of_inputs] + nuerons_per_layers
-        self.layers = [
-            Layer(layers[i], layers[i + 1]) for i in range(len(nuerons_per_layers))
-        ]
+        self.layers = [Layer(layers[i], layers[i + 1]) for i in range(len(nuerons_per_layers))]
         self.loss_fn = loss_fn
         self.prob_fn = prob_fn
 

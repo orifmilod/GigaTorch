@@ -35,9 +35,7 @@ class Tensor:
         topo = _build_topological_sort(self)
 
         # Propagate the gradient backprops
-        self.grad = (
-            1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
-        )
+        self.grad = 1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
         for node in reversed(topo):
             node._backprop()
 
@@ -119,9 +117,7 @@ class Tensor:
 
         # Backward propagation for addition operation
         def _backprop():
-            self.grad += (
-                1.0 * output.grad
-            )  # (Derivative with respect to itself) * output gradient
+            self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
             other.grad += 1.0 * output.grad  # same here
 
         output._backprop = _backprop
@@ -133,9 +129,7 @@ class Tensor:
 
         # Backward propagation for multiplication operation
         def _backprop():
-            self.grad += (
-                other.data * output.grad
-            )  # (Derivative with respect to itself) * output gradient
+            self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
             other.grad += self.data * output.grad  # same here
 
         output._backprop = _backprop

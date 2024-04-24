@@ -29,17 +29,22 @@ Channels: The number of input channels. For example, an RGB image would have 3 c
 Height: The height of the input.
 Width: The width of the input.
 """
+
+
 class MaxPool2D(Compute):
     def __init__(self, kernel_size, stride=None):
         self.kernel_size = kernel_size
         self.stride = stride if stride is not None else kernel_size
 
-
     def compute(self, input: Tensor) -> Tensor:
         assert len(input.shape) == 4, f"can't 2d pool {input.shape}"
         (batch_size, channels, height, width) = input.shape
-        assert (height - self.kernel_size) % self.stride == 0, f"Height does not fit the kernel size {self.kernel_size} and stride {self.stride}"
-        assert (width - self.kernel_size) % self.stride == 0, f"Width does not fit the kernel size {self.kernel_size} and stride {self.stride}"
+        assert (
+            height - self.kernel_size
+        ) % self.stride == 0, f"Height does not fit the kernel size {self.kernel_size} and stride {self.stride}"
+        assert (
+            width - self.kernel_size
+        ) % self.stride == 0, f"Width does not fit the kernel size {self.kernel_size} and stride {self.stride}"
 
         print("Computing maxpool")
         print("Input shape: ", input.shape)
@@ -85,9 +90,7 @@ class Conv2D(Compute):
         self.kernels = Tensor(
             [
                 [
-                    WightInitializer().xavier_uniform(
-                        in_channels, out_channels, kernel_size, kernel_size
-                    )
+                    WightInitializer().xavier_uniform(in_channels, out_channels, kernel_size, kernel_size)
                     for _ in range(in_channels)
                 ]
                 for _ in range(out_channels)
@@ -118,6 +121,7 @@ class Conv2D(Compute):
                         )
 
         return output
+
 
 class CNN:
     def __init__(self, train_data_dir, test_data_dir, categories):

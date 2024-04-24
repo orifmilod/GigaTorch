@@ -36,24 +36,23 @@ The current recommended way to install GigaTorch is from source.
 git clone https://github.com/orifmilod/GigaTorch.git
 cd GigaTorch
 # Make sure you have virtualenv installed
-python3 -m pip install virtualenv
-python3 -m venv env
-source ./env/bin/activate
-pip3 install -r requirements.txt 
+pip3 install poetry
+poetry config virtualenvs.in project true
+poetry install
 ```
 #### Building the project
 ```
-python setup.py build
+poetry build
 ``` 
 
 #### Run the tests 
 ```
-python3 -m pytest 
+peotry run pytest 
 ```
 
 #### Linting and formating the code in-place
 ```
-python setup.py format
+poetry run black .
 ``` 
  
 ## Contributing & features to add

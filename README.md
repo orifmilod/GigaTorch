@@ -37,7 +37,7 @@ git clone https://github.com/orifmilod/GigaTorch.git
 cd GigaTorch
 # Make sure you have virtualenv installed
 pip3 install poetry
-poetry config virtualenvs.in project true
+poetry config virtualenvs.in-project true
 poetry install
 ```
 #### Building the project

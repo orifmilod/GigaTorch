@@ -47,12 +47,15 @@ poetry build
 
 #### Run the tests 
 ```
-peotry run pytest 
+poetry run pytest 
 ```
 
 #### Linting and formating the code in-place
 ```
 poetry run black .
+``` 
+#### Running examples
+poetry run python example/image_models/gigatorch/cnn.py
 ``` 
  
 ## Contributing & features to add

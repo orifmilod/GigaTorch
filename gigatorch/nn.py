@@ -52,9 +52,7 @@ class MLP:
 
     def calc_loss(self, ys, y_pred):
         # Convertin y_pred to probabilities
-        loss = sum(self.loss_fn(ys, y_pred), Tensor(0))
-        loss.backprop()
-        return loss.data
+        return sum(self.loss_fn(ys, y_pred), Tensor(0))
 
     def __repr__(self):
         result = ""

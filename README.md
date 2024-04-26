@@ -55,9 +55,10 @@ poetry run pytest
 poetry run black .
 ``` 
 #### Running examples
+```
 poetry run python example/image_models/gigatorch/cnn.py
-``` 
- 
+```
+
 ## Contributing & features to add
 If you want to contribute, please take a look at the issues created and project tab, but here is list of features we want to add
 

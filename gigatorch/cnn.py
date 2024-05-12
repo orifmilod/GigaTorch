@@ -51,8 +51,7 @@ class MaxPool2D(Compute):
 
         pooled_height = (height - self.kernel_size) // self.stride + 1
         pooled_width = (width - self.kernel_size) // self.stride + 1
-        output = np.zeros((batch_size, channels, pooled_height, pooled_width))
-
+        output = Tensor(np.zeros((batch_size, channels, pooled_height, pooled_width)))
         for b in range(batch_size):
             for c in range(channels):
                 for i in range(pooled_height):
@@ -63,6 +62,7 @@ class MaxPool2D(Compute):
                         w_end = w_start + self.kernel_size
                         output[b, c, i, j] = np.max(input.data[b, c, h_start:h_end, w_start:w_end])
 
+        print("Output shape: ", output.shape)
         print("\n")
         return Tensor(output)
 
@@ -107,7 +107,9 @@ class Conv2D(Compute):
         output_height = (height - self.kernel_size) // self.stride + 1
         output_width = (width - self.kernel_size) // self.stride + 1
         output = Tensor(np.zeros((batch_size, self.out_channels, output_height, output_width)))
-
+        print("Computing Conv2D")
+        print("Conv2D input shape: ", input.shape)
+        # TODO: Parallel processing for batch_size & layers
         for b in range(batch_size):
             for k in range(self.out_channels):
                 for i in range(output_height):
@@ -119,7 +121,8 @@ class Conv2D(Compute):
                         output[b, k, i, j] = self.activation_fn(
                             np.sum((input[b, :, h_start:h_end, w_start:w_end] * self.kernels[k]).data)
                         )
-
+        print("Conv2D output shape: ", output.shape)
+        print("\n")
         return output
 
 

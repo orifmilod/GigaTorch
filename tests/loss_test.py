@@ -1,5 +1,5 @@
 from numpy import allclose
-from gigatorch.loss import cross_entropy_loss, softmax
+from gigatorch.loss import cross_entropy_loss, softmax, squared_loss
 from gigatorch.tensor import Tensor
 import torch
 
@@ -32,3 +32,11 @@ def test_softmax_extreme_values():
     expected = Tensor([0.0, 0.0, 0.0, 1])  # last number should be 1 and not 'nan'
     output = softmax(logits)
     assert all(expected.item() == output.item())
+
+
+def test_squared_loss():
+    y_pred = Tensor([0.25, 0.75, 0, 0, 0])
+    ys = Tensor([1, 0, 0, 0, 0])
+
+    loss = squared_loss(ys, y_pred)
+    assert loss.item() == 1.125

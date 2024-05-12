@@ -8,7 +8,7 @@ class Neuron:
         self.bias = Tensor(random.uniform(-1, 1))
         self.nonlin = nonlin
 
-    def __call__(self, x):
+    def __call__(self, x: Tensor) -> Tensor:
         total = sum((wi * xi for wi, xi in list(zip(self.weights, x))), Tensor(0)) + self.bias
         return total.tanh()
 
@@ -23,8 +23,8 @@ class Layer:
 
         self.neurons = [Neuron(number_of_inputs) for _ in range(number_of_neurons)]
 
-    def __call__(self, x):
-        return [neuron(x) for neuron in self.neurons]
+    def __call__(self, x: Tensor) -> Tensor:
+        return Tensor([neuron(x) for neuron in self.neurons])
 
     def __repr__(self):
         result = ""
@@ -45,10 +45,10 @@ class MLP:
         self.loss_fn = loss_fn
         self.prob_fn = prob_fn
 
-    def __call__(self, x):
+    def __call__(self, x: Tensor) -> Tensor:
         for layer in self.layers:
             x = layer(x)
-        return x
+        return Tensor(x)
 
     def calc_loss(self, ys, y_pred):
         # Convertin y_pred to probabilities

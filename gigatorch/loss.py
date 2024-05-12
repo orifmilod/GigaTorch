@@ -2,7 +2,7 @@ from gigatorch.tensor import Tensor
 import numpy as np
 
 
-def squared_loss(ys, y_pred):
+def squared_loss(ys: Tensor, y_pred: Tensor) -> Tensor:
     return sum([(y_pred - y_target) ** 2 for y_target, y_pred in zip(ys, y_pred)])
 
 

@@ -21,7 +21,7 @@ class CNN:
 
         self._setup_feature_extraction_layers()
         # TODO: Any better way of computing the input layer?
-        # input_shape = (1, 28, 28) 
+        # input_shape = (1, 28, 28)
 
         # For calculating loss we will use the following:
         # loss = L(y, f(s)); where L is the loss function, f is the softmax and s is the output from NN
@@ -59,7 +59,7 @@ class CNN:
                 # Since our image is gray scale, we cast it to a 1 dimensional 3d tensor - (1,x,x)
                 # For other images, it would be 3 RGB layers (batch_size, 3, x, x)
                 # Here it's (1, 1, 28, 28)
-                img = img.reshape(batching_size, num_of_channels, *img.shape) 
+                img = img.reshape(batching_size, num_of_channels, *img.shape)
                 if category not in data:
                     data[category] = []
 
@@ -74,11 +74,12 @@ class CNN:
     """
     Extracts features from the image
     """
+
     def _extract_features(self, data):
         for layer in self.features_extraction_layers:
             data = layer.compute(data)
         return data
-    
+
     def train(self):
         # Extract features
         for category in self.training_data:
@@ -110,8 +111,7 @@ class CNN:
 
 
 def main():
-    cnn = CNN("./mnist/training",
-              "./mnist/testing", [i for i in range(1)])
+    cnn = CNN("./mnist/training", "./mnist/testing", [i for i in range(1)])
     cnn.train()
 
 

@@ -142,6 +142,9 @@ def test_mlp_backward_pass():
 
     result_output = mlp([Tensor(a) for a in x])[0]
     result_loss = mlp.calc_loss([Tensor(a) for a in x_target], [result_output])
+    
+    # Perform backpropagation to compute gradients
+    result_loss.backprop()
 
     # PyTorch
     model = nn.Sequential(
@@ -170,7 +173,7 @@ def test_mlp_backward_pass():
     expected_loss.backward()
 
     tol = 1e-6
-    assert abs(expected_loss.item() - result_loss) < tol
+    assert abs(expected_loss.item() - result_loss.data) < tol
     assert abs(expected_output.item() - result_output.data) < tol
 
     for layer_index in range(len(neurons_per_layer)):
@@ -179,4 +182,4 @@ def test_mlp_backward_pass():
         for neuron_index in range(neurons_per_layer[layer_index]):
             neuron = my_layer.neurons[neuron_index]
             ws = [w.grad for w in neuron.weights]
-            assert allclose(Tensor(ws), py_layer[neuron_index], atol=tol)
+            assert allclose(torch.tensor(ws), py_layer[neuron_index], atol=tol)

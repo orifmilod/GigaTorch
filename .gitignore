@@ -6,5 +6,6 @@ output*
 env/
 build/
 .eggs/
-**/data/**
+example/**/data/
+example/**/data/**
 temp/

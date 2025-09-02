@@ -8,7 +8,8 @@ class Tensor:
     """stores a single scalar value and its gradient"""
 
     def __init__(self, input, _parents=[], _op=""):
-        self.data = input.data if isinstance(input, Tensor) else np.array(input)
+        self.data = input.data if isinstance(
+            input, Tensor) else np.array(input)
         self.grad = 0.0
         self._backprop = lambda: None
         self._parents = _parents
@@ -35,7 +36,8 @@ class Tensor:
         topo = _build_topological_sort(self)
 
         # Propagate the gradient backprops
-        self.grad = 1.0  # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
+        # Setting the cost node as derivative of cost to itself is 1 (dC/dC)
+        self.grad = 1.0
         for node in reversed(topo):
             node._backprop()
 
@@ -60,11 +62,42 @@ class Tensor:
 
     def sum(self, axis=None, keepdims=False):
         data = self.data.sum(axis=axis, keepdims=keepdims)
-        return Tensor(data)
+        out = Tensor(data, [self])
+
+        def _backprop():
+            # Broadcast the output gradient back to the shape of the input
+            grad = out.grad
+            if np.ndim(grad) == 0:
+                self.grad += np.ones_like(self.data) * grad
+            else:
+                # broadcast output gradient to input shape
+                self.grad += np.broadcast_to(grad, self.data.shape)
+
+        out._backprop = _backprop
+        return out
 
     def mean(self, axis=None, keepdims=False):
         data = self.data.mean(axis=axis, keepdims=keepdims)
-        return Tensor(data)
+        out = Tensor(data, [self])
+
+        def _backprop():
+            # Gradient of mean is 1/N broadcasted to input shape
+            grad = out.grad
+            # number of elements reduced along the operation
+            if axis is None:
+                n = self.data.size
+            else:
+                # compute number of elements in the reduced axes
+                # using numpy to get shape after reduction
+                tmp = self.data.mean(axis=axis, keepdims=keepdims)
+                n = int(self.data.size / tmp.size)
+            if np.ndim(grad) == 0:
+                self.grad += np.ones_like(self.data) * (grad / n)
+            else:
+                self.grad += np.broadcast_to(grad / n, self.data.shape)
+
+        out._backprop = _backprop
+        return out
 
     def exp(self):
         return Tensor(np.exp(self.data))
@@ -86,18 +119,15 @@ class Tensor:
         return Tensor(data)
 
     def tanh(self):
-        x = self.data
-        t = (math.exp(2 * x) - 1) / (math.exp(2 * x) + 1)
-        output = Tensor(t, [self])
+        # Use numpy's vectorized tanh to support array inputs
+        out = Tensor(np.tanh(self.data), [self])
 
-        # Backpropagation for tanh operation
+        # Backpropagation for tanh operation: derivative is 1 - tanh(x)^2
         def _backprop():
-            self.grad += (
-                1 - t**2
-            ) * output.grad  # (derivative of tanh) * output gradient https://en.wikipedia.org/wiki/Hyperbolic_functions#Derivatives
+            self.grad += (1 - out.data ** 2) * out.grad
 
-        output._backprop = _backprop
-        return output
+        out._backprop = _backprop
+        return out
 
     def relu(self):
         out = Tensor(np.maximum(self.data, 0), [self])
@@ -117,7 +147,8 @@ class Tensor:
 
         # Backward propagation for addition operation
         def _backprop():
-            self.grad += 1.0 * output.grad  # (Derivative with respect to itself) * output gradient
+            # (Derivative with respect to itself) * output gradient
+            self.grad += 1.0 * output.grad
             other.grad += 1.0 * output.grad  # same here
 
         output._backprop = _backprop
@@ -129,7 +160,8 @@ class Tensor:
 
         # Backward propagation for multiplication operation
         def _backprop():
-            self.grad += other.data * output.grad  # (Derivative with respect to itself) * output gradient
+            # (Derivative with respect to itself) * output gradient
+            self.grad += other.data * output.grad
             other.grad += self.data * output.grad  # same here
 
         output._backprop = _backprop
@@ -140,12 +172,20 @@ class Tensor:
 
     def __pow__(self, other):
         other = other if isinstance(other, Tensor) else Tensor(other)
-        output = Tensor(self.data**other.data, [self])
+        output = Tensor(self.data**other.data, [self, other])
 
         def _backprop():
-            self.grad += (
-                other.data * self.data ** (other.data - 1)
-            ) * output.grad  # (derivative of the power) * (output gradient)
+            # d/dself x**y = y * x**(y-1)
+            self.grad += (other.data * self.data **
+                          (other.data - 1)) * output.grad
+            # d/dother x**y = x**y * log(x)
+            # guard against non-positive x for log by using a safe substitute
+            try:
+                log_x = np.log(self.data)
+            except Exception:
+                # fallback: where self.data <= 0, use 0 (no meaningful gradient for negative/zero base in this simple impl)
+                log_x = np.where(self.data > 0, np.log(self.data), 0.0)
+            other.grad += (output.data * log_x) * output.grad
 
         output._backprop = _backprop
         return output

@@ -1,8 +1,6 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 import json
-import os
-
-from pprint import pprint
+import regex as re
 
 
 class Tokenizer:
@@ -13,10 +11,16 @@ class Tokenizer:
     def __init__(self):
         self.vocab = {index: bytes([index]) for index in range(256)}
         self.bpe_map = self.load_bpe_mapping()
+        # ignore the casing
+
+        self.pattern = re.compile(
+            r"""'s|'t|'re|'ve|'m|'ll|'d| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+""",
+            re.IGNORECASE)
 
         for (p0, p1), index in self.bpe_map.items():
             self.vocab[index] = self.vocab[p0] + self.vocab[p1]
 
+    ################ INFERENCE PART ##########################
     def load_bpe_mapping(self, file_path):
         map = {}
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -53,26 +57,29 @@ class Tokenizer:
         tokens = b"".join(self.vocab[token] for token in tokens)
         return tokens.decode('utf-8', errors='replace')
 
+    ################## TRAINING PART ####################
     @staticmethod
-    def generate_bpe_map(vocab_file: str, VOCABULARY_SIZE=1000) -> dict:
-        all_tokens = []
-        with open(vocab_file, 'r', encoding='utf-8') as f:
-            for line in f:
-                tokens = list(line.encode('utf-8'))
-                all_tokens.extend(tokens)
+    def train(vocab_file: str, output_file: str, VOCABULARY_SIZE=50256) -> dict:
+        """
+        Generate a BPE mapping from a vocabulary file and write it to output_file.
+        This implementation reads the input once (binary) and uses efficient
+        Counter-based pair counting for faster merges.
+        """
+        # Read file as binary once (faster than per-line encode)
+        with open(vocab_file, 'rb') as f:
+            data = f.read()
+        all_tokens = list(data)
 
         bpe_map = Tokenizer.merge_common_pairs(all_tokens, VOCABULARY_SIZE)
 
-        with open('result.json', 'w') as fp:
+        with open(output_file, 'w') as fp:
             json.dump(bpe_map, fp)
+
+        return bpe_map
 
     @staticmethod
     def get_pair_counter(tokens):
-        counter = defaultdict(int)
-        for pair in zip(tokens, tokens[1:]):
-            counter[pair] += 1
-
-        return counter
+        return Counter(zip(tokens, tokens[1:]))
 
     @staticmethod
     def merge_common_pairs(tokens, vocab_size):
@@ -80,31 +87,48 @@ class Tokenizer:
         Merge the most common pair of tokens until it reaches vocabulary size or
         there are no more pairs which occurs more than once to merge.
 
-        return tokens and BPE map.
+        Uses Counter.most_common (C-optimized) and a single-pass merge per step
+        to improve performance vs. manual Python loops.
         """
-
         if not tokens:
-            return
+            return {}
 
         new_id = 256  # Because maximum utf-8 codepoint ends in 255
         compression_steps_left = vocab_size - 256
 
-        pair_counter = Tokenizer.get_pair_counter(tokens)
-        pair_to_be_merged = max(pair_counter, key=pair_counter.get)
-
         bpe_map = {}
 
-        while pair_counter[pair_to_be_merged] > 1 and compression_steps_left > 0:
-            print(
-                f"Merging pair: {pair_to_be_merged} with id: {new_id}. Occured: {pair_counter[pair_to_be_merged]}")
+        # Initialize pair counter efficiently
+        pair_counter = Tokenizer.get_pair_counter(tokens)
 
-            # Merge it
-            tokens = Tokenizer.merge(tokens, pair_to_be_merged, new_id)
+        counter = 0
+        while compression_steps_left > 0 and pair_counter:
+            pair_to_be_merged, freq = pair_counter.most_common(1)[0]
+            if freq <= 1:
+                break
+
+            if counter % 100 == 0:
+                print("Step left", compression_steps_left, freq)
+
+            counter += 1
+
+            # Single-pass merge to produce the new token list
+            new_tokens = []
+            i = 0
+            length = len(tokens)
+            while i < length:
+                if i < length - 1 and (tokens[i], tokens[i + 1]) == pair_to_be_merged:
+                    new_tokens.append(new_id)
+                    i += 2
+                else:
+                    new_tokens.append(tokens[i])
+                    i += 1
+
             bpe_map[f"{pair_to_be_merged[0]}+{pair_to_be_merged[1]}"] = new_id
 
-            # Recompute pair counter
+            # Prepare for next iteration
+            tokens = new_tokens
             pair_counter = Tokenizer.get_pair_counter(tokens)
-            pair_to_be_merged = max(pair_counter, key=pair_counter.get)
 
             new_id += 1
             compression_steps_left -= 1
